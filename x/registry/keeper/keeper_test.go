@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 
 	"cosmossdk.io/x/nft"
@@ -17,6 +18,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/provenance-io/provenance/app"
+	metadatatypes "github.com/provenance-io/provenance/x/metadata/types"
 	"github.com/provenance-io/provenance/testutil/assertions"
 	"github.com/provenance-io/provenance/x/registry/keeper"
 	"github.com/provenance-io/provenance/x/registry/types"
@@ -116,7 +118,7 @@ func (s *KeeperTestSuite) TestCreateRegistry() {
 		},
 	}
 
-	err := s.app.RegistryKeeper.CreateRegistry(s.ctx, key, roles)
+	err := s.app.RegistryKeeper.CreateRegistry(s.ctx, key, roles, "")
 	s.Require().NoError(err)
 
 	// Verify registry was created
@@ -128,8 +130,57 @@ func (s *KeeperTestSuite) TestCreateRegistry() {
 
 	// Test duplicate creation not allowed.
 	expDupErr := "registry already exists for key: \"" + key.String() + "\": registry already exists"
-	err = s.app.RegistryKeeper.CreateRegistry(s.ctx, key, roles)
+	err = s.app.RegistryKeeper.CreateRegistry(s.ctx, key, roles, "")
 	s.Require().EqualError(err, expDupErr)
+}
+
+// TestCreateRegistry_RejectsInvalidClassReference verifies the keeper-layer invariant that an entry
+// may only be created with a registry class id that exists and is scoped to the entry's asset class.
+// This guards against invalid state introduced via direct keeper calls that bypass msg/genesis.
+func (s *KeeperTestSuite) TestCreateRegistry_RejectsInvalidClassReference() {
+	key := &types.RegistryKey{
+		AssetClassId: s.validNFTClass.Id,
+		NftId:        "create-registry-bad-class-nft",
+	}
+
+	// A nil key must be rejected rather than panic.
+	err := s.app.RegistryKeeper.CreateRegistry(s.ctx, nil, nil, "")
+	s.Require().EqualError(err, "registry key must not be nil")
+
+	// Referencing a class that does not exist must fail closed.
+	err = s.app.RegistryKeeper.CreateRegistry(s.ctx, key, nil, "missing-class")
+	s.Require().ErrorIs(err, types.NewErrCodeRegistryClassNotFound("missing-class"))
+
+	// The entry must not have been written.
+	entry, err := s.app.RegistryKeeper.GetRegistry(s.ctx, key)
+	s.Require().NoError(err)
+	s.Require().Nil(entry)
+}
+
+// TestRoleAuthorizationsForEntry_FailsClosedOnMissingClass verifies that resolving authorization for
+// an entry whose registry class id is absent from state fails closed: the role-change message
+// returns a deterministic error (rather than panicking or silently downgrading to the params/legacy
+// authorization tier), so an inconsistent store cannot halt block processing.
+func (s *KeeperTestSuite) TestRoleAuthorizationsForEntry_FailsClosedOnMissingClass() {
+	key := &types.RegistryKey{
+		AssetClassId: s.validNFTClass.Id,
+		NftId:        "fail-closed-missing-class-nft",
+	}
+	// Seed the entry directly to bypass CreateRegistry's validation, simulating corrupt state or a
+	// class that was removed after the entry referenced it.
+	s.Require().NoError(s.app.RegistryKeeper.SetRegistry(s.ctx, types.RegistryEntry{
+		Key:             key,
+		RegistryClassId: "missing-class",
+	}))
+
+	msgServer := keeper.NewMsgServer(s.app.RegistryKeeper)
+	_, err := msgServer.GrantRole(s.ctx, &types.MsgGrantRole{
+		Signer:    s.user1,
+		Key:       key,
+		Role:      types.RegistryRole_REGISTRY_ROLE_SERVICER,
+		Addresses: []string{s.user1},
+	})
+	s.Require().ErrorIs(err, types.NewErrCodeRegistryClassNotFound("missing-class"))
 }
 
 func (s *KeeperTestSuite) TestGrantRole() {
@@ -144,7 +195,7 @@ func (s *KeeperTestSuite) TestGrantRole() {
 			Addresses: []string{s.user1Addr.String()},
 		},
 	}
-	err := s.app.RegistryKeeper.CreateRegistry(s.ctx, baseKey, baseRoles)
+	err := s.app.RegistryKeeper.CreateRegistry(s.ctx, baseKey, baseRoles, "")
 	s.Require().NoError(err)
 
 	tests := []struct {
@@ -239,7 +290,7 @@ func (s *KeeperTestSuite) TestRevokeRole() {
 			Addresses: []string{s.user1Addr.String(), s.user2Addr.String()},
 		},
 	}
-	err := s.app.RegistryKeeper.CreateRegistry(s.ctx, baseKey, baseRoles)
+	err := s.app.RegistryKeeper.CreateRegistry(s.ctx, baseKey, baseRoles, "")
 	s.Require().NoError(err)
 
 	tests := []struct {
@@ -322,7 +373,7 @@ func (s *KeeperTestSuite) TestHasRole() {
 			Addresses: []string{s.user1Addr.String()},
 		},
 	}
-	err := s.app.RegistryKeeper.CreateRegistry(s.ctx, baseKey, baseRoles)
+	err := s.app.RegistryKeeper.CreateRegistry(s.ctx, baseKey, baseRoles, "")
 	s.Require().NoError(err)
 
 	tests := []struct {
@@ -387,7 +438,7 @@ func (s *KeeperTestSuite) TestGetRegistry() {
 			Addresses: []string{s.user1Addr.String()},
 		},
 	}
-	err := s.app.RegistryKeeper.CreateRegistry(s.ctx, baseKey, baseRoles)
+	err := s.app.RegistryKeeper.CreateRegistry(s.ctx, baseKey, baseRoles, "")
 	s.Require().NoError(err)
 
 	tests := []struct {
@@ -456,7 +507,7 @@ func (s *KeeperTestSuite) TestGetRegistries() {
 		{AssetClassId: "eclass", NftId: "nft1"},
 	}
 	for _, k := range keys {
-		s.Require().NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, k, roles))
+		s.Require().NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, k, roles, ""))
 	}
 
 	// Helper to get key strings in order
@@ -646,6 +697,323 @@ func (s *KeeperTestSuite) GenesisTest() {
 	s.Require().Equal(genesis1, genesis2)
 }
 
+// TestUnregisterNFT_RequiresControllerSignature verifies that when a CONTROLLER is set, the
+// controller (not the NFT owner) must sign. When no controller is set, the NFT owner signs.
+// This prevents an owner from bypassing policies via unregister+re-register while ensuring
+// the controller can always unregister even if they don't own the NFT.
+func (s *KeeperTestSuite) TestUnregisterNFT_RequiresControllerSignature() {
+	key := &types.RegistryKey{
+		AssetClassId: s.validNFTClass.Id,
+		NftId:        s.validNFT.Id,
+	}
+	require := s.Require()
+	msgServer := keeper.NewMsgServer(s.app.RegistryKeeper)
+
+	// No controller set: NFT owner (user1) can unregister.
+	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{}, ""))
+	_, err := msgServer.UnregisterNFT(s.ctx, &types.MsgUnregisterNFT{Signer: s.user1, Key: key})
+	require.NoError(err, "NFT owner must be able to unregister when no controller is set")
+
+	// Register with user2 as CONTROLLER. user1 still owns the NFT.
+	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
+	}, ""))
+
+	// user1 (NFT owner, not controller) is rejected.
+	_, err = msgServer.UnregisterNFT(s.ctx, &types.MsgUnregisterNFT{Signer: s.user1, Key: key})
+	require.Error(err, "NFT owner without controller role must be rejected")
+	require.Contains(err.Error(), "unauthorized")
+
+	// user2 (controller, not NFT owner) can unregister.
+	_, err = msgServer.UnregisterNFT(s.ctx, &types.MsgUnregisterNFT{Signer: s.user2, Key: key})
+	require.NoError(err, "controller must be able to unregister even without owning the NFT")
+
+	entry, err := s.app.RegistryKeeper.GetRegistry(s.ctx, key)
+	require.NoError(err)
+	require.Nil(entry, "registry entry must be gone after controller unregistration")
+}
+
+// TestRegistryBulkUpdate_EnforcesRolePolicies verifies that RegistryBulkUpdate validates role
+// changes through the authorization engine when updating existing entries, so it cannot bypass the
+// same multi-party policies enforced by GrantRole / RevokeRole / SetRoles.
+func (s *KeeperTestSuite) TestRegistryBulkUpdate_EnforcesRolePolicies() {
+	key := &types.RegistryKey{
+		AssetClassId: s.validNFTClass.Id,
+		NftId:        s.validNFT.Id,
+	}
+	controllerRole := types.RegistryRole_REGISTRY_ROLE_CONTROLLER
+
+	// Install the CONTROLLER policy so the authorization engine can enforce it.
+	require := s.Require()
+	require.NoError(s.app.RegistryKeeper.SetParams(s.ctx, types.Params{
+		RoleAuthorizations: types.ControllerRoleAuthorizations(),
+	}))
+	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
+		{Role: controllerRole, Addresses: []string{s.user1}},
+	}, ""))
+
+	// user1 (current controller + NFT owner) tries to transfer CONTROLLER to user2 without user2
+	// co-signing. The CONTROLLER policy requires the incoming controller to sign; this must fail.
+	msgServer := keeper.NewMsgServer(s.app.RegistryKeeper)
+	_, err := msgServer.RegistryBulkUpdate(s.ctx, &types.MsgRegistryBulkUpdate{
+		Signer: s.user1,
+		Entries: []types.RegistryEntry{
+			{
+				Key: key,
+				Roles: []types.RolesEntry{
+					{Role: controllerRole, Addresses: []string{s.user2}},
+				},
+			},
+		},
+	})
+	require.Error(err, "BulkUpdate should reject controller transfer without incoming controller signature")
+	require.Contains(err.Error(), "unauthorized")
+
+	// The original entry must be unchanged.
+	entry, err := s.app.RegistryKeeper.GetRegistry(s.ctx, key)
+	require.NoError(err)
+	require.Equal([]string{s.user1}, entry.GetRoleAddrs(controllerRole), "controller must remain user1")
+}
+
+// TestDeleteRegistry_ClearsPendingRoleChanges verifies that DeleteRegistry removes any pending
+// role change records for the deleted entry so stale approvals cannot be replayed after
+// re-registration.
+func (s *KeeperTestSuite) TestDeleteRegistry_ClearsPendingRoleChanges() {
+	key := &types.RegistryKey{
+		AssetClassId: s.validNFTClass.Id,
+		NftId:        s.validNFT.Id,
+	}
+	require := s.Require()
+
+	// Install the CONTROLLER policy so the authorization engine can enforce it.
+	require.NoError(s.app.RegistryKeeper.SetParams(s.ctx, types.Params{
+		RoleAuthorizations: types.ControllerRoleAuthorizations(),
+	}))
+
+	// Register the NFT with user1 as CONTROLLER.
+	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
+	}, ""))
+
+	// Propose a controller change to user2. Because user2 (incoming controller) has not yet
+	// co-signed, this creates a pending change record rather than applying immediately.
+	changeID, applied, err := s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, []types.RoleUpdate{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
+	})
+	require.NoError(err)
+	require.False(applied, "change should be pending, not immediately applied")
+	require.NotEmpty(changeID)
+
+	// Confirm the pending change exists.
+	pending, _, err := s.app.RegistryKeeper.GetPendingRoleChanges(s.ctx, nil, key)
+	require.NoError(err)
+	require.Len(pending, 1, "pending change should exist before delete")
+
+	// Delete the registry entry.
+	require.NoError(s.app.RegistryKeeper.DeleteRegistry(s.ctx, key))
+
+	// The pending change must be gone: without this cleanup, re-registration of the same NFT would
+	// allow the stale approvals to be replayed against the new entry.
+	pending, _, err = s.app.RegistryKeeper.GetPendingRoleChanges(s.ctx, nil, key)
+	require.NoError(err)
+	require.Empty(pending, "pending changes must be cleared after delete")
+}
+
+// TestProposeRoleChange_LimitOnePerNFT verifies that only one pending role change can exist for a
+// given NFT at a time. A second proposal for a different set of role updates must be rejected until
+// the first is cancelled or applied.
+func (s *KeeperTestSuite) TestProposeRoleChange_LimitOnePerNFT() {
+	key := &types.RegistryKey{
+		AssetClassId: s.validNFTClass.Id,
+		NftId:        s.validNFT.Id,
+	}
+	require := s.Require()
+
+	// Install the CONTROLLER policy.
+	require.NoError(s.app.RegistryKeeper.SetParams(s.ctx, types.Params{
+		RoleAuthorizations: types.ControllerRoleAuthorizations(),
+	}))
+
+	// Register with user1 as CONTROLLER.
+	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
+	}, ""))
+
+	// First proposal: transfer CONTROLLER to user2. Leaves a pending change (user2 must co-sign).
+	_, applied, err := s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, []types.RoleUpdate{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
+	})
+	require.NoError(err)
+	require.False(applied)
+
+	// Second proposal with different role updates must be rejected while the first is pending.
+	_, _, err = s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, []types.RoleUpdate{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
+	})
+	require.Error(err, "second conflicting proposal should be rejected")
+	require.Contains(err.Error(), "pending role change already exists")
+
+	// Re-proposing the same role updates (same ID) is allowed — it acts as a co-approval.
+	_, _, err = s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user2, key, []types.RoleUpdate{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
+	})
+	require.NoError(err, "co-approving the same pending change must be allowed")
+}
+
+// TestCancelRoleChange verifies that a pending role change can be cancelled by its proposer and
+// that non-proposers are rejected.
+func (s *KeeperTestSuite) TestCancelRoleChange() {
+	key := &types.RegistryKey{
+		AssetClassId: s.validNFTClass.Id,
+		NftId:        s.validNFT.Id,
+	}
+	require := s.Require()
+
+	require.NoError(s.app.RegistryKeeper.SetParams(s.ctx, types.Params{
+		RoleAuthorizations: types.ControllerRoleAuthorizations(),
+	}))
+	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
+	}, ""))
+
+	changeID, applied, err := s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, []types.RoleUpdate{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
+	})
+	require.NoError(err)
+	require.False(applied)
+
+	msgServer := keeper.NewMsgServer(s.app.RegistryKeeper)
+
+	// Non-proposer cannot cancel.
+	_, err = msgServer.CancelRoleChange(s.ctx, &types.MsgCancelRoleChange{
+		Signer:   s.user2,
+		ChangeId: changeID,
+	})
+	require.Error(err)
+	require.Contains(err.Error(), "unauthorized")
+
+	// Proposer can cancel.
+	_, err = msgServer.CancelRoleChange(s.ctx, &types.MsgCancelRoleChange{
+		Signer:   s.user1,
+		ChangeId: changeID,
+	})
+	require.NoError(err, "proposer must be able to cancel the pending change")
+
+	// Change must be gone.
+	change, err := s.app.RegistryKeeper.GetPendingRoleChange(s.ctx, changeID)
+	require.NoError(err)
+	require.Nil(change, "pending change must not exist after cancellation")
+}
+
+// TestPendingRoleChange_Expiry verifies that approvals on an expired pending change are rejected
+// and the expired record is cleaned up.
+func (s *KeeperTestSuite) TestPendingRoleChange_Expiry() {
+	key := &types.RegistryKey{
+		AssetClassId: s.validNFTClass.Id,
+		NftId:        s.validNFT.Id,
+	}
+	require := s.Require()
+
+	require.NoError(s.app.RegistryKeeper.SetParams(s.ctx, types.Params{
+		RoleAuthorizations:   types.ControllerRoleAuthorizations(),
+		PendingChangeExpiry:  time.Hour,
+	}))
+	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
+	}, ""))
+
+	changeID, applied, err := s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, []types.RoleUpdate{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
+	})
+	require.NoError(err)
+	require.False(applied)
+
+	// Advance block time past the expiry.
+	s.ctx = s.ctx.WithBlockTime(s.ctx.BlockTime().Add(2 * time.Hour))
+
+	// Approval after expiry must be rejected and the record removed.
+	_, err = s.app.RegistryKeeper.ApproveRoleChange(s.ctx, s.user2, changeID)
+	require.Error(err, "approving an expired change must fail")
+	require.Contains(err.Error(), "pending role change not found")
+
+	change, err := s.app.RegistryKeeper.GetPendingRoleChange(s.ctx, changeID)
+	require.NoError(err)
+	require.Nil(change, "expired change must be removed on failed approval")
+
+	// After expiry cleans up via ApproveRoleChange, a new proposal must succeed.
+	_, _, err = s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, []types.RoleUpdate{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
+	})
+	require.NoError(err, "new proposal must be accepted after expired record is cleaned up")
+}
+
+// TestPendingRoleChange_ExpiredBlocksProposal verifies that an expired pending change is cleaned
+// up eagerly when a new proposal is made, instead of blocking it indefinitely.
+func (s *KeeperTestSuite) TestPendingRoleChange_ExpiredBlocksProposal() {
+	key := &types.RegistryKey{
+		AssetClassId: s.validNFTClass.Id,
+		NftId:        s.validNFT.Id,
+	}
+	require := s.Require()
+
+	require.NoError(s.app.RegistryKeeper.SetParams(s.ctx, types.Params{
+		RoleAuthorizations:  types.ControllerRoleAuthorizations(),
+		PendingChangeExpiry: time.Hour,
+	}))
+	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
+	}, ""))
+
+	// First proposal leaves a pending change that will expire.
+	_, _, err := s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, []types.RoleUpdate{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
+	})
+	require.NoError(err)
+
+	// Advance past expiry.
+	s.ctx = s.ctx.WithBlockTime(s.ctx.BlockTime().Add(2 * time.Hour))
+
+	// A new proposal with different role updates must succeed: the expired record is cleaned up
+	// eagerly rather than blocking the new proposal.
+	_, _, err = s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, []types.RoleUpdate{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
+	})
+	require.NoError(err, "proposal must succeed after expired pending change is cleaned up")
+}
+
+// TestPendingRoleChange_ExpiryBypassViaPropose verifies that MsgProposeRoleChange also enforces
+// expiry when reusing an existing pending record, preventing the expiry from being bypassed.
+func (s *KeeperTestSuite) TestPendingRoleChange_ExpiryBypassViaPropose() {
+	key := &types.RegistryKey{
+		AssetClassId: s.validNFTClass.Id,
+		NftId:        s.validNFT.Id,
+	}
+	require := s.Require()
+
+	require.NoError(s.app.RegistryKeeper.SetParams(s.ctx, types.Params{
+		RoleAuthorizations:  types.ControllerRoleAuthorizations(),
+		PendingChangeExpiry: time.Hour,
+	}))
+	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
+	}, ""))
+
+	// Propose a change; user2 has not yet co-signed.
+	roleUpdates := []types.RoleUpdate{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
+	}
+	_, _, err := s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, roleUpdates)
+	require.NoError(err)
+
+	// Advance past expiry.
+	s.ctx = s.ctx.WithBlockTime(s.ctx.BlockTime().Add(2 * time.Hour))
+
+	// Attempting to co-approve via ProposeRoleChange (same change ID) must also be rejected.
+	_, _, err = s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user2, key, roleUpdates)
+	require.Error(err, "propose co-approval on expired change must fail")
+	require.Contains(err.Error(), "pending role change not found")
+}
+
 func (s *KeeperTestSuite) TestRegisterNFTMsgServer() {
 	tests := []struct {
 		name     string
@@ -754,4 +1122,248 @@ func (s *KeeperTestSuite) TestRegisterNFTMsgServer() {
 			}
 		})
 	}
+}
+
+// TestAssociateRegistryClass_ControllerCanAssociate verifies that a CONTROLLER signer can
+// associate a registry class on an existing entry.
+func (s *KeeperTestSuite) TestAssociateRegistryClass_ControllerCanAssociate() {
+	require := s.Require()
+	key := &types.RegistryKey{AssetClassId: s.validNFTClass.Id, NftId: s.validNFT.Id}
+
+	// Create a class whose asset_class_id matches the entry.
+	class := types.RegistryClass{
+		RegistryClassId:    "test-class",
+		AssetClassId:       s.validNFTClass.Id,
+		Maintainer:         s.user1,
+		RoleAuthorizations: nil,
+	}
+	require.NoError(s.app.RegistryKeeper.CreateRegistryClass(s.ctx, class))
+
+	// Register with a controller but no class yet.
+	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
+	}, ""))
+
+	msg := &types.MsgAssociateRegistryClass{
+		Signer:          s.user1,
+		Key:             key,
+		RegistryClassId: "test-class",
+	}
+	_, err := keeper.NewMsgServer(s.app.RegistryKeeper).AssociateRegistryClass(s.ctx, msg)
+	require.NoError(err, "controller must be allowed to associate a registry class")
+
+	entry, err := s.app.RegistryKeeper.GetRegistry(s.ctx, key)
+	require.NoError(err)
+	require.NotNil(entry)
+	require.Equal("test-class", entry.RegistryClassId, "registry_class_id must be updated")
+}
+
+// TestAssociateRegistryClass_NFTOwnerCanAssociateWhenControllerSet verifies that the NFT owner can
+// associate a registry class even when a separate controller is set — neither takes precedence.
+func (s *KeeperTestSuite) TestAssociateRegistryClass_NFTOwnerCanAssociateWhenControllerSet() {
+	require := s.Require()
+	key := &types.RegistryKey{AssetClassId: s.validNFTClass.Id, NftId: s.validNFT.Id}
+
+	class := types.RegistryClass{
+		RegistryClassId: "test-class",
+		AssetClassId:    s.validNFTClass.Id,
+		Maintainer:      s.user1,
+	}
+	require.NoError(s.app.RegistryKeeper.CreateRegistryClass(s.ctx, class))
+
+	// user2 is the controller; user1 owns the NFT.
+	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
+	}, ""))
+
+	// user1 (NFT owner, not controller) must still be able to associate.
+	msg := &types.MsgAssociateRegistryClass{
+		Signer:          s.user1,
+		Key:             key,
+		RegistryClassId: "test-class",
+	}
+	_, err := keeper.NewMsgServer(s.app.RegistryKeeper).AssociateRegistryClass(s.ctx, msg)
+	require.NoError(err, "NFT owner must be able to associate even when a controller is set")
+
+	entry, err := s.app.RegistryKeeper.GetRegistry(s.ctx, key)
+	require.NoError(err)
+	require.Equal("test-class", entry.RegistryClassId)
+}
+
+
+// controller nor the NFT owner is rejected even when a controller is set on the entry.
+func (s *KeeperTestSuite) TestAssociateRegistryClass_UnauthorizedSignerRejected() {
+	require := s.Require()
+	key := &types.RegistryKey{AssetClassId: s.validNFTClass.Id, NftId: s.validNFT.Id}
+
+	class := types.RegistryClass{
+		RegistryClassId: "test-class",
+		AssetClassId:    s.validNFTClass.Id,
+		Maintainer:      s.user1,
+	}
+	require.NoError(s.app.RegistryKeeper.CreateRegistryClass(s.ctx, class))
+
+	// user1 is the controller AND NFT owner; user2 is neither.
+	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
+	}, ""))
+
+	msg := &types.MsgAssociateRegistryClass{
+		Signer:          s.user2,
+		Key:             key,
+		RegistryClassId: "test-class",
+	}
+	_, err := keeper.NewMsgServer(s.app.RegistryKeeper).AssociateRegistryClass(s.ctx, msg)
+	require.Error(err, "signer who is neither controller nor NFT owner must be rejected")
+}
+
+// TestAssociateRegistryClass_NFTOwnerCanAssociateWithoutController verifies that the NFT owner can
+// associate a class when no controller is set on the entry.
+func (s *KeeperTestSuite) TestAssociateRegistryClass_NFTOwnerCanAssociateWithoutController() {
+	require := s.Require()
+	key := &types.RegistryKey{AssetClassId: s.validNFTClass.Id, NftId: s.validNFT.Id}
+
+	class := types.RegistryClass{
+		RegistryClassId: "test-class",
+		AssetClassId:    s.validNFTClass.Id,
+		Maintainer:      s.user1,
+	}
+	require.NoError(s.app.RegistryKeeper.CreateRegistryClass(s.ctx, class))
+
+	// No controller set — entry created by user1 who also owns the NFT.
+	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{}, ""))
+
+	msg := &types.MsgAssociateRegistryClass{
+		Signer:          s.user1,
+		Key:             key,
+		RegistryClassId: "test-class",
+	}
+	_, err := keeper.NewMsgServer(s.app.RegistryKeeper).AssociateRegistryClass(s.ctx, msg)
+	require.NoError(err, "NFT owner must be allowed when no controller is set")
+
+	entry, err := s.app.RegistryKeeper.GetRegistry(s.ctx, key)
+	require.NoError(err)
+	require.Equal("test-class", entry.RegistryClassId)
+}
+
+// TestAssociateRegistryClass_ScopeDataOwnerCanAssociate verifies that a scope data-owner party can
+// associate a registry class when the NFT is a Provenance Metadata Scope.
+func (s *KeeperTestSuite) TestAssociateRegistryClass_ScopeDataOwnerCanAssociate() {
+	require := s.Require()
+
+	// Create a real Provenance Metadata Scope.
+	scopeID := metadatatypes.ScopeMetadataAddress(uuid.New())
+	scope := metadatatypes.NewScope(
+		scopeID,
+		metadatatypes.MetadataAddress{}, // no spec required for this test
+		[]metadatatypes.Party{
+			{Address: s.user1, Role: metadatatypes.PartyType_PARTY_TYPE_OWNER},
+		},
+		nil,   // no data access
+		"",    // no value owner
+		false, // no party rollup
+	)
+	require.NoError(s.app.MetadataKeeper.SetScope(s.ctx, *scope))
+
+	// The "asset class" for a Scope is a scope-spec address; for this test we reuse the existing
+	// nft class and rely on the fact that the registry module validates the NFT exists via scope
+	// lookup, not class lookup for scope-type NFTs.  Use the scope bech32 as the nftID.
+	scopeBech32 := scopeID.String()
+
+	// We need an asset_class_id for the RegistryKey — use the NFT class id as a stand-in.
+	assetClassID := s.validNFTClass.Id
+	key := &types.RegistryKey{AssetClassId: assetClassID, NftId: scopeBech32}
+
+	class := types.RegistryClass{
+		RegistryClassId: "scope-class",
+		AssetClassId:    assetClassID,
+		Maintainer:      s.user1,
+	}
+	require.NoError(s.app.RegistryKeeper.CreateRegistryClass(s.ctx, class))
+
+	// Register without controller — no scope spec check needed for this path.
+	require.NoError(s.app.RegistryKeeper.SetRegistry(s.ctx, types.RegistryEntry{
+		Key:             key,
+		Roles:           []types.RolesEntry{},
+		RegistryClassId: "",
+	}))
+
+	msg := &types.MsgAssociateRegistryClass{
+		Signer:          s.user1, // user1 is a scope Owner party (data owner)
+		Key:             key,
+		RegistryClassId: "scope-class",
+	}
+	_, err := keeper.NewMsgServer(s.app.RegistryKeeper).AssociateRegistryClass(s.ctx, msg)
+	require.NoError(err, "scope data owner must be allowed to associate a registry class")
+}
+
+// TestAssociateRegistryClass_NonOwnerScopePartyRejected verifies that a scope party whose role is
+// not PARTY_TYPE_OWNER is rejected, even though they appear in scope.Owners.
+func (s *KeeperTestSuite) TestAssociateRegistryClass_NonOwnerScopePartyRejected() {
+	require := s.Require()
+
+	scopeID := metadatatypes.ScopeMetadataAddress(uuid.New())
+	scope := metadatatypes.NewScope(
+		scopeID,
+		metadatatypes.MetadataAddress{},
+		[]metadatatypes.Party{
+			// user1 is an originator — not a data owner.
+			{Address: s.user1, Role: metadatatypes.PartyType_PARTY_TYPE_ORIGINATOR},
+		},
+		nil, "", false,
+	)
+	require.NoError(s.app.MetadataKeeper.SetScope(s.ctx, *scope))
+
+	assetClassID := s.validNFTClass.Id
+	key := &types.RegistryKey{AssetClassId: assetClassID, NftId: scopeID.String()}
+
+	class := types.RegistryClass{
+		RegistryClassId: "scope-class",
+		AssetClassId:    assetClassID,
+		Maintainer:      s.user1,
+	}
+	require.NoError(s.app.RegistryKeeper.CreateRegistryClass(s.ctx, class))
+	require.NoError(s.app.RegistryKeeper.SetRegistry(s.ctx, types.RegistryEntry{
+		Key: key, Roles: []types.RolesEntry{},
+	}))
+
+	msg := &types.MsgAssociateRegistryClass{
+		Signer:          s.user1,
+		Key:             key,
+		RegistryClassId: "scope-class",
+	}
+	_, err := keeper.NewMsgServer(s.app.RegistryKeeper).AssociateRegistryClass(s.ctx, msg)
+	require.Error(err, "scope party with non-OWNER role must be rejected")
+}
+
+
+// rejected at ValidateBasic.
+func (s *KeeperTestSuite) TestAssociateRegistryClass_EmptyClassIdRejected() {
+	require := s.Require()
+	key := &types.RegistryKey{AssetClassId: s.validNFTClass.Id, NftId: s.validNFT.Id}
+	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{}, ""))
+
+	msg := types.MsgAssociateRegistryClass{
+		Signer:          s.user1,
+		Key:             key,
+		RegistryClassId: "",
+	}
+	err := msg.ValidateBasic()
+	require.Error(err, "empty registry_class_id must be rejected by ValidateBasic")
+	require.Contains(err.Error(), "registry_class_id")
+}
+
+// TestAssociateRegistryClass_EntryNotFound verifies that the handler returns an error when there
+// is no existing registry entry for the given key.
+func (s *KeeperTestSuite) TestAssociateRegistryClass_EntryNotFound() {
+	require := s.Require()
+	key := &types.RegistryKey{AssetClassId: s.validNFTClass.Id, NftId: "non-existent-nft"}
+
+	msg := &types.MsgAssociateRegistryClass{
+		Signer:          s.user1,
+		Key:             key,
+		RegistryClassId: "some-class",
+	}
+	_, err := keeper.NewMsgServer(s.app.RegistryKeeper).AssociateRegistryClass(s.ctx, msg)
+	require.Error(err, "must return an error when the registry entry does not exist")
 }

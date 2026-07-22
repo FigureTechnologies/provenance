@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/spf13/cobra"
 
@@ -25,6 +26,12 @@ func CmdQuery() *cobra.Command {
 		GetCmdQueryRegistry(),
 		GetCmdQueryRegistries(),
 		GetCmdQueryHasRole(),
+		GetCmdQueryPendingRoleChange(),
+		GetCmdQueryPendingRoleChanges(),
+		GetCmdQueryRegistryClass(),
+		GetCmdQueryRegistryClasses(),
+		GetCmdQueryParams(),
+		GetCmdQueryValidateRoleChange(),
 	)
 
 	return cmd
@@ -138,6 +145,223 @@ func GetCmdQueryHasRole() *cobra.Command {
 		},
 	}
 
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// GetCmdQueryPendingRoleChange returns the command for querying a single pending role change by id
+func GetCmdQueryPendingRoleChange() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "pending-role-change <id>",
+		Short: "Query a pending role change by its id",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.PendingRoleChange(context.Background(), &types.QueryPendingRoleChangeRequest{
+				Id: args[0],
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// GetCmdQueryPendingRoleChanges returns the command for querying pending role changes
+func GetCmdQueryPendingRoleChanges() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "pending-role-changes [asset_class_id] [nft_id]",
+		Short: "Query pending role changes, optionally filtered by registry key",
+		Args: func(_ *cobra.Command, args []string) error {
+			if len(args) != 0 && len(args) != 2 {
+				return fmt.Errorf("accepts either 0 args (all pending changes) or 2 args (asset_class_id and nft_id), received %d", len(args))
+			}
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+
+			var key *types.RegistryKey
+			if len(args) == 2 {
+				key = &types.RegistryKey{
+					AssetClassId: args[0],
+					NftId:        args[1],
+				}
+			}
+
+			pageReq, err := client.ReadPageRequestWithPageKeyDecoded(cmd.Flags())
+			if err != nil {
+				return err
+			}
+
+			res, err := queryClient.PendingRoleChanges(context.Background(), &types.QueryPendingRoleChangesRequest{
+				Key:        key,
+				Pagination: pageReq,
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "pending-role-changes")
+	return cmd
+}
+
+// GetCmdQueryRegistryClass returns the command for querying a single registry class by id
+func GetCmdQueryRegistryClass() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "registry-class <registry_class_id>",
+		Short: "Query a registry class (including its authorization policy) by id",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.RegistryClass(context.Background(), &types.QueryRegistryClassRequest{
+				RegistryClassId: args[0],
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// GetCmdQueryRegistryClasses returns the command for querying all registry classes
+func GetCmdQueryRegistryClasses() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "registry-classes",
+		Short: "Query all registry classes",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			pageReq, err := client.ReadPageRequestWithPageKeyDecoded(cmd.Flags())
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.RegistryClasses(context.Background(), &types.QueryRegistryClassesRequest{
+				Pagination: pageReq,
+			})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	flags.AddPaginationFlagsToCmd(cmd, "registry-classes")
+	return cmd
+}
+
+// GetCmdQueryParams returns the command for querying the registry module params.
+func GetCmdQueryParams() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "params",
+		Short: "Query the registry module parameters",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.Params(context.Background(), &types.QueryParamsRequest{})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+// GetCmdQueryValidateRoleChange returns the command for the ValidateRoleChange dry-run query.
+func GetCmdQueryValidateRoleChange() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "validate-role-change <asset_class_id> <nft_id> <role_updates_json>",
+		Short: "Dry-run a role-change batch against a set of approvers",
+		Long: `Check whether a set of approvers would satisfy every affected role's policy, without
+writing any state. role_updates_json is a JSON array of RoleUpdate, e.g.:
+
+  '[{"role":"REGISTRY_ROLE_CONTROLLER","addresses":["pb1newcontroller..."]}]'
+
+Pass one or more --approver flags with the candidate approver addresses.`,
+		Args: cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			approvers, err := cmd.Flags().GetStringArray("approver")
+			if err != nil {
+				return err
+			}
+
+			// Parse via the proto-JSON codec so enum fields (e.g. role) accept their string names
+			// like "REGISTRY_ROLE_CONTROLLER" rather than only numeric values. The role_updates_json
+			// argument is the array; wrap it in the request message to decode it.
+			req := &types.QueryValidateRoleChangeRequest{}
+			wrapped := fmt.Sprintf(`{"role_updates": %s}`, args[2])
+			if err := clientCtx.Codec.UnmarshalJSON([]byte(wrapped), req); err != nil {
+				return fmt.Errorf("failed to parse role_updates_json: %w", err)
+			}
+			req.Key = &types.RegistryKey{
+				AssetClassId: args[0],
+				NftId:        args[1],
+			}
+			req.Approvers = approvers
+
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.ValidateRoleChange(context.Background(), req)
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	cmd.Flags().StringArray("approver", nil, "a candidate approver address (repeatable)")
 	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }

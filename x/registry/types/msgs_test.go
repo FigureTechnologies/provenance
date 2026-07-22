@@ -13,13 +13,20 @@ import (
 func TestAllMsgsGetSigners(t *testing.T) {
 	msgMakers := []testutil.MsgMaker{
 		func(signer string) sdk.Msg { return &MsgRegisterNFT{Signer: signer} },
-		func(signer string) sdk.Msg { return &MsgGrantRole{Signer: signer} },
-		func(signer string) sdk.Msg { return &MsgRevokeRole{Signer: signer} },
 		func(signer string) sdk.Msg { return &MsgUnregisterNFT{Signer: signer} },
 		func(signer string) sdk.Msg { return &MsgRegistryBulkUpdate{Signer: signer} },
+		func(signer string) sdk.Msg { return &MsgProposeRoleChange{Signer: signer} },
+		func(signer string) sdk.Msg { return &MsgApproveRoleChange{Signer: signer} },
+		func(signer string) sdk.Msg { return &MsgGrantRole{Signer: signer} },
+		func(signer string) sdk.Msg { return &MsgRevokeRole{Signer: signer} },
+		func(signer string) sdk.Msg { return &MsgSetRoles{Signer: signer} },
+		func(signer string) sdk.Msg { return &MsgCreateRegistryClass{Signer: signer} },
+		func(signer string) sdk.Msg { return &MsgUpdateRegistryClassRoleAuthorization{Signer: signer} },
+		func(signer string) sdk.Msg { return &MsgUpdateParams{Authority: signer} },
 	}
+	msgMakersMulti := []testutil.MsgMakerMulti{}
 
-	testutil.RunGetSignersTests(t, AllRequestMsgs, msgMakers, nil)
+	testutil.RunGetSignersTests(t, AllRequestMsgs, msgMakers, msgMakersMulti)
 }
 
 func TestMsgRegisterNFT_ValidateBasic(t *testing.T) {
@@ -116,6 +123,104 @@ func TestMsgRevokeRole_ValidateBasic(t *testing.T) {
 	}
 }
 
+func TestMsgSetRoles_ValidateBasic(t *testing.T) {
+	validAddr := sdk.AccAddress("setroles_signer________").String()
+	otherAddr := sdk.AccAddress("other_addr3___________").String()
+	validKey := &RegistryKey{AssetClassId: "aclass", NftId: "nft1"}
+	validUpdate := RoleUpdate{Role: RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{otherAddr}}
+
+	tests := []struct {
+		name string
+		msg  MsgSetRoles
+		exp  string
+	}{
+		{name: "valid", msg: MsgSetRoles{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{validUpdate}}},
+		{name: "valid clear role", msg: MsgSetRoles{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole_REGISTRY_ROLE_CONTROLLER}}}},
+		{name: "empty signer", msg: MsgSetRoles{Signer: "", Key: validKey, RoleUpdates: []RoleUpdate{validUpdate}}, exp: "invalid signer: empty address"},
+		{name: "bad signer", msg: MsgSetRoles{Signer: "bad", Key: validKey, RoleUpdates: []RoleUpdate{validUpdate}}, exp: "invalid signer: decoding bech32"},
+		{name: "nil key", msg: MsgSetRoles{Signer: validAddr, Key: nil, RoleUpdates: []RoleUpdate{validUpdate}}, exp: "invalid key: registry key cannot be nil"},
+		{name: "no role_updates", msg: MsgSetRoles{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{}}, exp: "invalid role_updates: at least one role update is required"},
+		{name: "unspecified role", msg: MsgSetRoles{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole_REGISTRY_ROLE_UNSPECIFIED}}}, exp: "invalid role_updates: 0: role cannot be unspecified"},
+		{name: "unknown role enum", msg: MsgSetRoles{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole(999), Addresses: []string{otherAddr}}}}, exp: "invalid role_updates: 0: role unknown registry_role enum value: 999"},
+		{name: "duplicate role", msg: MsgSetRoles{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{otherAddr}}, {Role: RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{validAddr}}}}, exp: "invalid role_updates: 1: duplicate role CONTROLLER"},
+		{name: "duplicate address in update", msg: MsgSetRoles{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{otherAddr, otherAddr}}}}, exp: "invalid role_updates: 0: duplicate address"},
+		{name: "bad address in update", msg: MsgSetRoles{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{"bad"}}}}, exp: "invalid role_updates: 0: invalid address"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.msg.ValidateBasic()
+			if tc.exp == "" {
+				assertions.RequireErrorContents(t, err, nil)
+			} else {
+				assertions.RequireErrorContents(t, err, []string{tc.exp})
+			}
+		})
+	}
+}
+
+func TestMsgProposeRoleChange_ValidateBasic(t *testing.T) {
+	validAddr := sdk.AccAddress("propose_signer_________").String()
+	otherAddr := sdk.AccAddress("propose_target_________").String()
+	validKey := &RegistryKey{AssetClassId: "aclass", NftId: "nft1"}
+	validUpdate := RoleUpdate{Role: RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{otherAddr}}
+
+	tests := []struct {
+		name string
+		msg  MsgProposeRoleChange
+		exp  string
+	}{
+		{name: "valid", msg: MsgProposeRoleChange{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{validUpdate}}},
+		{name: "valid clear role", msg: MsgProposeRoleChange{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole_REGISTRY_ROLE_CONTROLLER}}}},
+		{name: "empty signer", msg: MsgProposeRoleChange{Signer: "", Key: validKey, RoleUpdates: []RoleUpdate{validUpdate}}, exp: "invalid signer: empty address"},
+		{name: "bad signer", msg: MsgProposeRoleChange{Signer: "bad", Key: validKey, RoleUpdates: []RoleUpdate{validUpdate}}, exp: "invalid signer: decoding bech32"},
+		{name: "nil key", msg: MsgProposeRoleChange{Signer: validAddr, Key: nil, RoleUpdates: []RoleUpdate{validUpdate}}, exp: "invalid key: registry key cannot be nil"},
+		{name: "no role_updates", msg: MsgProposeRoleChange{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{}}, exp: "invalid role_updates: at least one role update is required"},
+		{name: "unspecified role", msg: MsgProposeRoleChange{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole_REGISTRY_ROLE_UNSPECIFIED}}}, exp: "invalid role_updates: 0: role cannot be unspecified"},
+		{name: "unknown role enum", msg: MsgProposeRoleChange{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole(999), Addresses: []string{otherAddr}}}}, exp: "invalid role_updates: 0: role unknown registry_role enum value: 999"},
+		{name: "duplicate role", msg: MsgProposeRoleChange{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{otherAddr}}, {Role: RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{validAddr}}}}, exp: "invalid role_updates: 1: duplicate role CONTROLLER"},
+		{name: "duplicate address in update", msg: MsgProposeRoleChange{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{otherAddr, otherAddr}}}}, exp: "invalid role_updates: 0: duplicate address"},
+		{name: "bad address in update", msg: MsgProposeRoleChange{Signer: validAddr, Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{"bad"}}}}, exp: "invalid role_updates: 0: invalid address"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.msg.ValidateBasic()
+			if tc.exp == "" {
+				assertions.RequireErrorContents(t, err, nil)
+			} else {
+				assertions.RequireErrorContents(t, err, []string{tc.exp})
+			}
+		})
+	}
+}
+
+func TestMsgApproveRoleChange_ValidateBasic(t *testing.T) {
+	validAddr := sdk.AccAddress("approve_signer_________").String()
+
+	tests := []struct {
+		name string
+		msg  MsgApproveRoleChange
+		exp  string
+	}{
+		{name: "valid", msg: MsgApproveRoleChange{Signer: validAddr, ChangeId: "abc123"}},
+		{name: "empty signer", msg: MsgApproveRoleChange{Signer: "", ChangeId: "abc123"}, exp: "invalid signer: empty address"},
+		{name: "bad signer", msg: MsgApproveRoleChange{Signer: "bad", ChangeId: "abc123"}, exp: "invalid signer: decoding bech32"},
+		{name: "empty change_id", msg: MsgApproveRoleChange{Signer: validAddr, ChangeId: ""}, exp: "invalid change_id: change_id is required"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.msg.ValidateBasic()
+			if tc.exp == "" {
+				assertions.RequireErrorContents(t, err, nil)
+			} else {
+				assertions.RequireErrorContents(t, err, []string{tc.exp})
+			}
+		})
+	}
+}
+
 func TestMsgUnregisterNFT_ValidateBasic(t *testing.T) {
 	validAddr := sdk.AccAddress("unreg_signer___________").String()
 	validKey := &RegistryKey{AssetClassId: "aclass", NftId: "nft1"}
@@ -169,6 +274,40 @@ func TestMsgRegistryBulkUpdate_ValidateBasic(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.msg.ValidateBasic()
+			if tc.exp == "" {
+				assertions.RequireErrorContents(t, err, nil)
+			} else {
+				assertions.RequireErrorContents(t, err, []string{tc.exp})
+			}
+		})
+	}
+}
+
+func TestQueryValidateRoleChangeRequest_Validate(t *testing.T) {
+	validAddr := sdk.AccAddress("vrc_approver___________").String()
+	otherAddr := sdk.AccAddress("vrc_other_addr_________").String()
+	validKey := &RegistryKey{AssetClassId: "aclass", NftId: "nft1"}
+	validUpdate := RoleUpdate{Role: RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{otherAddr}}
+
+	tests := []struct {
+		name string
+		req  QueryValidateRoleChangeRequest
+		exp  string
+	}{
+		{name: "valid", req: QueryValidateRoleChangeRequest{Key: validKey, RoleUpdates: []RoleUpdate{validUpdate}, Approvers: []string{validAddr}}},
+		{name: "valid no approvers", req: QueryValidateRoleChangeRequest{Key: validKey, RoleUpdates: []RoleUpdate{validUpdate}}},
+		{name: "nil key", req: QueryValidateRoleChangeRequest{Key: nil, RoleUpdates: []RoleUpdate{validUpdate}}, exp: "invalid key: key is required"},
+		{name: "no role_updates", req: QueryValidateRoleChangeRequest{Key: validKey, RoleUpdates: []RoleUpdate{}}, exp: "invalid role_updates: at least one role update is required"},
+		{name: "unspecified role", req: QueryValidateRoleChangeRequest{Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole_REGISTRY_ROLE_UNSPECIFIED}}}, exp: "invalid role_updates: 0: role cannot be unspecified"},
+		{name: "duplicate role", req: QueryValidateRoleChangeRequest{Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{otherAddr}}, {Role: RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{validAddr}}}}, exp: "invalid role_updates: 1: duplicate role CONTROLLER"},
+		{name: "bad address in update", req: QueryValidateRoleChangeRequest{Key: validKey, RoleUpdates: []RoleUpdate{{Role: RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{"bad"}}}}, exp: "invalid role_updates: 0: invalid address"},
+		{name: "bad approver", req: QueryValidateRoleChangeRequest{Key: validKey, RoleUpdates: []RoleUpdate{validUpdate}, Approvers: []string{"bad"}}, exp: "invalid approvers: invalid address"},
+		{name: "duplicate approver", req: QueryValidateRoleChangeRequest{Key: validKey, RoleUpdates: []RoleUpdate{validUpdate}, Approvers: []string{validAddr, validAddr}}, exp: "invalid approvers: duplicate address"},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.req.Validate()
 			if tc.exp == "" {
 				assertions.RequireErrorContents(t, err, nil)
 			} else {

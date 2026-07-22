@@ -5,6 +5,7 @@ package types
 
 import (
 	fmt "fmt"
+	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	io "io"
 	math "math"
@@ -319,12 +320,575 @@ func (m *EventRegistryBulkUpdated) GetAssetClassId() string {
 	return ""
 }
 
+// EventRoleChangeProposed is emitted when a pending role change is opened.
+type EventRoleChangeProposed struct {
+	NftId        string `protobuf:"bytes,1,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	AssetClassId string `protobuf:"bytes,2,opt,name=asset_class_id,json=assetClassId,proto3" json:"asset_class_id,omitempty"`
+	ChangeId     string `protobuf:"bytes,3,opt,name=change_id,json=changeId,proto3" json:"change_id,omitempty"`
+	Proposer     string `protobuf:"bytes,4,opt,name=proposer,proto3" json:"proposer,omitempty"`
+}
+
+func (m *EventRoleChangeProposed) Reset()         { *m = EventRoleChangeProposed{} }
+func (m *EventRoleChangeProposed) String() string { return proto.CompactTextString(m) }
+func (*EventRoleChangeProposed) ProtoMessage()    {}
+func (*EventRoleChangeProposed) Descriptor() ([]byte, []int) {
+	return fileDescriptor_61a0995529587ff0, []int{5}
+}
+func (m *EventRoleChangeProposed) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventRoleChangeProposed) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventRoleChangeProposed.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventRoleChangeProposed) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventRoleChangeProposed.Merge(m, src)
+}
+func (m *EventRoleChangeProposed) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventRoleChangeProposed) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventRoleChangeProposed.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventRoleChangeProposed proto.InternalMessageInfo
+
+func (m *EventRoleChangeProposed) GetNftId() string {
+	if m != nil {
+		return m.NftId
+	}
+	return ""
+}
+
+func (m *EventRoleChangeProposed) GetAssetClassId() string {
+	if m != nil {
+		return m.AssetClassId
+	}
+	return ""
+}
+
+func (m *EventRoleChangeProposed) GetChangeId() string {
+	if m != nil {
+		return m.ChangeId
+	}
+	return ""
+}
+
+func (m *EventRoleChangeProposed) GetProposer() string {
+	if m != nil {
+		return m.Proposer
+	}
+	return ""
+}
+
+// EventRoleChangeApproved is emitted when a party records an approval for a pending role change.
+type EventRoleChangeApproved struct {
+	ChangeId string `protobuf:"bytes,1,opt,name=change_id,json=changeId,proto3" json:"change_id,omitempty"`
+	Approver string `protobuf:"bytes,2,opt,name=approver,proto3" json:"approver,omitempty"`
+}
+
+func (m *EventRoleChangeApproved) Reset()         { *m = EventRoleChangeApproved{} }
+func (m *EventRoleChangeApproved) String() string { return proto.CompactTextString(m) }
+func (*EventRoleChangeApproved) ProtoMessage()    {}
+func (*EventRoleChangeApproved) Descriptor() ([]byte, []int) {
+	return fileDescriptor_61a0995529587ff0, []int{6}
+}
+func (m *EventRoleChangeApproved) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventRoleChangeApproved) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventRoleChangeApproved.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventRoleChangeApproved) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventRoleChangeApproved.Merge(m, src)
+}
+func (m *EventRoleChangeApproved) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventRoleChangeApproved) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventRoleChangeApproved.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventRoleChangeApproved proto.InternalMessageInfo
+
+func (m *EventRoleChangeApproved) GetChangeId() string {
+	if m != nil {
+		return m.ChangeId
+	}
+	return ""
+}
+
+func (m *EventRoleChangeApproved) GetApprover() string {
+	if m != nil {
+		return m.Approver
+	}
+	return ""
+}
+
+// EventRoleChangeApplied is emitted when a pending role change accumulates enough approvals and is applied.
+type EventRoleChangeApplied struct {
+	NftId        string `protobuf:"bytes,1,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	AssetClassId string `protobuf:"bytes,2,opt,name=asset_class_id,json=assetClassId,proto3" json:"asset_class_id,omitempty"`
+	ChangeId     string `protobuf:"bytes,3,opt,name=change_id,json=changeId,proto3" json:"change_id,omitempty"`
+}
+
+func (m *EventRoleChangeApplied) Reset()         { *m = EventRoleChangeApplied{} }
+func (m *EventRoleChangeApplied) String() string { return proto.CompactTextString(m) }
+func (*EventRoleChangeApplied) ProtoMessage()    {}
+func (*EventRoleChangeApplied) Descriptor() ([]byte, []int) {
+	return fileDescriptor_61a0995529587ff0, []int{7}
+}
+func (m *EventRoleChangeApplied) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventRoleChangeApplied) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventRoleChangeApplied.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventRoleChangeApplied) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventRoleChangeApplied.Merge(m, src)
+}
+func (m *EventRoleChangeApplied) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventRoleChangeApplied) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventRoleChangeApplied.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventRoleChangeApplied proto.InternalMessageInfo
+
+func (m *EventRoleChangeApplied) GetNftId() string {
+	if m != nil {
+		return m.NftId
+	}
+	return ""
+}
+
+func (m *EventRoleChangeApplied) GetAssetClassId() string {
+	if m != nil {
+		return m.AssetClassId
+	}
+	return ""
+}
+
+func (m *EventRoleChangeApplied) GetChangeId() string {
+	if m != nil {
+		return m.ChangeId
+	}
+	return ""
+}
+
+// EventRoleChangeCancelled is emitted when a pending role change is cancelled by its proposer.
+type EventRoleChangeCancelled struct {
+	ChangeId    string `protobuf:"bytes,1,opt,name=change_id,json=changeId,proto3" json:"change_id,omitempty"`
+	CancelledBy string `protobuf:"bytes,2,opt,name=cancelled_by,json=cancelledBy,proto3" json:"cancelled_by,omitempty"`
+}
+
+func (m *EventRoleChangeCancelled) Reset()         { *m = EventRoleChangeCancelled{} }
+func (m *EventRoleChangeCancelled) String() string { return proto.CompactTextString(m) }
+func (*EventRoleChangeCancelled) ProtoMessage()    {}
+func (*EventRoleChangeCancelled) Descriptor() ([]byte, []int) {
+	return fileDescriptor_61a0995529587ff0, []int{8}
+}
+func (m *EventRoleChangeCancelled) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventRoleChangeCancelled) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventRoleChangeCancelled.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventRoleChangeCancelled) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventRoleChangeCancelled.Merge(m, src)
+}
+func (m *EventRoleChangeCancelled) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventRoleChangeCancelled) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventRoleChangeCancelled.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventRoleChangeCancelled proto.InternalMessageInfo
+
+func (m *EventRoleChangeCancelled) GetChangeId() string {
+	if m != nil {
+		return m.ChangeId
+	}
+	return ""
+}
+
+func (m *EventRoleChangeCancelled) GetCancelledBy() string {
+	if m != nil {
+		return m.CancelledBy
+	}
+	return ""
+}
+
+// EventRegistryClassCreated is emitted when a registry class is created.
+type EventRegistryClassCreated struct {
+	RegistryClassId string `protobuf:"bytes,1,opt,name=registry_class_id,json=registryClassId,proto3" json:"registry_class_id,omitempty"`
+	AssetClassId    string `protobuf:"bytes,2,opt,name=asset_class_id,json=assetClassId,proto3" json:"asset_class_id,omitempty"`
+	Maintainer      string `protobuf:"bytes,3,opt,name=maintainer,proto3" json:"maintainer,omitempty"`
+}
+
+func (m *EventRegistryClassCreated) Reset()         { *m = EventRegistryClassCreated{} }
+func (m *EventRegistryClassCreated) String() string { return proto.CompactTextString(m) }
+func (*EventRegistryClassCreated) ProtoMessage()    {}
+func (*EventRegistryClassCreated) Descriptor() ([]byte, []int) {
+	return fileDescriptor_61a0995529587ff0, []int{9}
+}
+func (m *EventRegistryClassCreated) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventRegistryClassCreated) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventRegistryClassCreated.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventRegistryClassCreated) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventRegistryClassCreated.Merge(m, src)
+}
+func (m *EventRegistryClassCreated) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventRegistryClassCreated) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventRegistryClassCreated.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventRegistryClassCreated proto.InternalMessageInfo
+
+func (m *EventRegistryClassCreated) GetRegistryClassId() string {
+	if m != nil {
+		return m.RegistryClassId
+	}
+	return ""
+}
+
+func (m *EventRegistryClassCreated) GetAssetClassId() string {
+	if m != nil {
+		return m.AssetClassId
+	}
+	return ""
+}
+
+func (m *EventRegistryClassCreated) GetMaintainer() string {
+	if m != nil {
+		return m.Maintainer
+	}
+	return ""
+}
+
+// EventRegistryClassUpdated is emitted when a registry class's authorization rules are updated.
+type EventRegistryClassUpdated struct {
+	RegistryClassId string `protobuf:"bytes,1,opt,name=registry_class_id,json=registryClassId,proto3" json:"registry_class_id,omitempty"`
+	Maintainer      string `protobuf:"bytes,2,opt,name=maintainer,proto3" json:"maintainer,omitempty"`
+}
+
+func (m *EventRegistryClassUpdated) Reset()         { *m = EventRegistryClassUpdated{} }
+func (m *EventRegistryClassUpdated) String() string { return proto.CompactTextString(m) }
+func (*EventRegistryClassUpdated) ProtoMessage()    {}
+func (*EventRegistryClassUpdated) Descriptor() ([]byte, []int) {
+	return fileDescriptor_61a0995529587ff0, []int{10}
+}
+func (m *EventRegistryClassUpdated) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventRegistryClassUpdated) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventRegistryClassUpdated.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventRegistryClassUpdated) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventRegistryClassUpdated.Merge(m, src)
+}
+func (m *EventRegistryClassUpdated) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventRegistryClassUpdated) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventRegistryClassUpdated.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventRegistryClassUpdated proto.InternalMessageInfo
+
+func (m *EventRegistryClassUpdated) GetRegistryClassId() string {
+	if m != nil {
+		return m.RegistryClassId
+	}
+	return ""
+}
+
+func (m *EventRegistryClassUpdated) GetMaintainer() string {
+	if m != nil {
+		return m.Maintainer
+	}
+	return ""
+}
+
+// EventParamsUpdated is emitted when the registry module's params are updated via governance.
+type EventParamsUpdated struct {
+}
+
+func (m *EventParamsUpdated) Reset()         { *m = EventParamsUpdated{} }
+func (m *EventParamsUpdated) String() string { return proto.CompactTextString(m) }
+func (*EventParamsUpdated) ProtoMessage()    {}
+func (*EventParamsUpdated) Descriptor() ([]byte, []int) {
+	return fileDescriptor_61a0995529587ff0, []int{11}
+}
+func (m *EventParamsUpdated) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventParamsUpdated) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventParamsUpdated.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventParamsUpdated) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventParamsUpdated.Merge(m, src)
+}
+func (m *EventParamsUpdated) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventParamsUpdated) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventParamsUpdated.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventParamsUpdated proto.InternalMessageInfo
+
+// RoleSigner describes a role/assignment whose resolved addresses contributed a signature toward
+// authorizing a role change. It is the structured form of an entry in EventRoleUpdated.signers.
+type RoleSigner struct {
+	// role is the (registry or NFT) role whose holders provided the signature(s).
+	Role string `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
+	// assignment is the assignment variant the role was resolved under (e.g. ASSIGNMENT_CURRENT).
+	Assignment string `protobuf:"bytes,2,opt,name=assignment,proto3" json:"assignment,omitempty"`
+	// addresses are the resolved addresses for the role that signed to authorize the change.
+	Addresses []string `protobuf:"bytes,3,rep,name=addresses,proto3" json:"addresses,omitempty"`
+}
+
+func (m *RoleSigner) Reset()         { *m = RoleSigner{} }
+func (m *RoleSigner) String() string { return proto.CompactTextString(m) }
+func (*RoleSigner) ProtoMessage()    {}
+func (*RoleSigner) Descriptor() ([]byte, []int) {
+	return fileDescriptor_61a0995529587ff0, []int{12}
+}
+func (m *RoleSigner) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *RoleSigner) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_RoleSigner.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *RoleSigner) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RoleSigner.Merge(m, src)
+}
+func (m *RoleSigner) XXX_Size() int {
+	return m.Size()
+}
+func (m *RoleSigner) XXX_DiscardUnknown() {
+	xxx_messageInfo_RoleSigner.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RoleSigner proto.InternalMessageInfo
+
+func (m *RoleSigner) GetRole() string {
+	if m != nil {
+		return m.Role
+	}
+	return ""
+}
+
+func (m *RoleSigner) GetAssignment() string {
+	if m != nil {
+		return m.Assignment
+	}
+	return ""
+}
+
+func (m *RoleSigner) GetAddresses() []string {
+	if m != nil {
+		return m.Addresses
+	}
+	return nil
+}
+
+// EventRoleUpdated is the comprehensive event emitted whenever a role is granted, revoked, or set
+// for a registered NFT. It is emitted for MsgGrantRole, MsgRevokeRole, and once per updated role
+// for MsgSetRoles (including changes applied via the propose/approve accumulation flow).
+type EventRoleUpdated struct {
+	// nft_id is the ID of the NFT for which the role was updated.
+	NftId string `protobuf:"bytes,1,opt,name=nft_id,json=nftId,proto3" json:"nft_id,omitempty"`
+	// asset_class_id is the ID of the asset class the NFT belongs to.
+	AssetClassId string `protobuf:"bytes,2,opt,name=asset_class_id,json=assetClassId,proto3" json:"asset_class_id,omitempty"`
+	// registry_class_id is the registry class governing this NFT (empty if none).
+	RegistryClassId string `protobuf:"bytes,3,opt,name=registry_class_id,json=registryClassId,proto3" json:"registry_class_id,omitempty"`
+	// role is the role that was updated.
+	Role string `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
+	// addresses are the addresses assigned to the role after this operation (empty if cleared).
+	Addresses []string `protobuf:"bytes,5,rep,name=addresses,proto3" json:"addresses,omitempty"`
+	// previous_addresses are the addresses assigned to the role before this operation.
+	PreviousAddresses []string `protobuf:"bytes,6,rep,name=previous_addresses,json=previousAddresses,proto3" json:"previous_addresses,omitempty"`
+	// signers describes the roles/addresses that authorized this change.
+	Signers []RoleSigner `protobuf:"bytes,7,rep,name=signers,proto3" json:"signers"`
+}
+
+func (m *EventRoleUpdated) Reset()         { *m = EventRoleUpdated{} }
+func (m *EventRoleUpdated) String() string { return proto.CompactTextString(m) }
+func (*EventRoleUpdated) ProtoMessage()    {}
+func (*EventRoleUpdated) Descriptor() ([]byte, []int) {
+	return fileDescriptor_61a0995529587ff0, []int{13}
+}
+func (m *EventRoleUpdated) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *EventRoleUpdated) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_EventRoleUpdated.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *EventRoleUpdated) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventRoleUpdated.Merge(m, src)
+}
+func (m *EventRoleUpdated) XXX_Size() int {
+	return m.Size()
+}
+func (m *EventRoleUpdated) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventRoleUpdated.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventRoleUpdated proto.InternalMessageInfo
+
+func (m *EventRoleUpdated) GetNftId() string {
+	if m != nil {
+		return m.NftId
+	}
+	return ""
+}
+
+func (m *EventRoleUpdated) GetAssetClassId() string {
+	if m != nil {
+		return m.AssetClassId
+	}
+	return ""
+}
+
+func (m *EventRoleUpdated) GetRegistryClassId() string {
+	if m != nil {
+		return m.RegistryClassId
+	}
+	return ""
+}
+
+func (m *EventRoleUpdated) GetRole() string {
+	if m != nil {
+		return m.Role
+	}
+	return ""
+}
+
+func (m *EventRoleUpdated) GetAddresses() []string {
+	if m != nil {
+		return m.Addresses
+	}
+	return nil
+}
+
+func (m *EventRoleUpdated) GetPreviousAddresses() []string {
+	if m != nil {
+		return m.PreviousAddresses
+	}
+	return nil
+}
+
+func (m *EventRoleUpdated) GetSigners() []RoleSigner {
+	if m != nil {
+		return m.Signers
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*EventNFTRegistered)(nil), "provenance.registry.v1.EventNFTRegistered")
 	proto.RegisterType((*EventRoleGranted)(nil), "provenance.registry.v1.EventRoleGranted")
 	proto.RegisterType((*EventRoleRevoked)(nil), "provenance.registry.v1.EventRoleRevoked")
 	proto.RegisterType((*EventNFTUnregistered)(nil), "provenance.registry.v1.EventNFTUnregistered")
 	proto.RegisterType((*EventRegistryBulkUpdated)(nil), "provenance.registry.v1.EventRegistryBulkUpdated")
+	proto.RegisterType((*EventRoleChangeProposed)(nil), "provenance.registry.v1.EventRoleChangeProposed")
+	proto.RegisterType((*EventRoleChangeApproved)(nil), "provenance.registry.v1.EventRoleChangeApproved")
+	proto.RegisterType((*EventRoleChangeApplied)(nil), "provenance.registry.v1.EventRoleChangeApplied")
+	proto.RegisterType((*EventRoleChangeCancelled)(nil), "provenance.registry.v1.EventRoleChangeCancelled")
+	proto.RegisterType((*EventRegistryClassCreated)(nil), "provenance.registry.v1.EventRegistryClassCreated")
+	proto.RegisterType((*EventRegistryClassUpdated)(nil), "provenance.registry.v1.EventRegistryClassUpdated")
+	proto.RegisterType((*EventParamsUpdated)(nil), "provenance.registry.v1.EventParamsUpdated")
+	proto.RegisterType((*RoleSigner)(nil), "provenance.registry.v1.RoleSigner")
+	proto.RegisterType((*EventRoleUpdated)(nil), "provenance.registry.v1.EventRoleUpdated")
 }
 
 func init() {
@@ -332,26 +896,45 @@ func init() {
 }
 
 var fileDescriptor_61a0995529587ff0 = []byte{
-	// 304 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x52, 0x2e, 0x28, 0xca, 0x2f,
-	0x4b, 0xcd, 0x4b, 0xcc, 0x4b, 0x4e, 0xd5, 0x2f, 0x4a, 0x4d, 0xcf, 0x2c, 0x2e, 0x29, 0xaa, 0xd4,
-	0x2f, 0x33, 0xd4, 0x4f, 0x2d, 0x4b, 0xcd, 0x2b, 0x29, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17,
-	0x12, 0x43, 0x28, 0xd2, 0x83, 0x29, 0xd2, 0x2b, 0x33, 0x54, 0x0a, 0xe4, 0x12, 0x72, 0x05, 0xa9,
-	0xf3, 0x73, 0x0b, 0x09, 0x02, 0x0b, 0xa7, 0x16, 0xa5, 0xa6, 0x08, 0x89, 0x72, 0xb1, 0xe5, 0xa5,
-	0x95, 0xc4, 0x67, 0xa6, 0x48, 0x30, 0x2a, 0x30, 0x6a, 0x70, 0x06, 0xb1, 0xe6, 0xa5, 0x95, 0x78,
-	0xa6, 0x08, 0xa9, 0x70, 0xf1, 0x25, 0x16, 0x17, 0xa7, 0x96, 0xc4, 0x27, 0xe7, 0x24, 0x16, 0x17,
-	0x83, 0xa4, 0x99, 0xc0, 0xd2, 0x3c, 0x60, 0x51, 0x67, 0x90, 0xa0, 0x67, 0x8a, 0x52, 0x23, 0x23,
-	0x97, 0x00, 0xd8, 0xcc, 0xa0, 0xfc, 0x9c, 0x54, 0xf7, 0xa2, 0xc4, 0xbc, 0x12, 0x0a, 0x4d, 0x14,
-	0x12, 0xe2, 0x62, 0x29, 0xca, 0xcf, 0x49, 0x95, 0x60, 0x06, 0xcb, 0x81, 0xd9, 0x42, 0x32, 0x5c,
-	0x9c, 0x89, 0x29, 0x29, 0x45, 0xa9, 0xc5, 0xc5, 0xa9, 0xc5, 0x12, 0x2c, 0x0a, 0xcc, 0x1a, 0x9c,
-	0x41, 0x08, 0x01, 0x54, 0x37, 0x04, 0xa5, 0x96, 0xe5, 0x67, 0xd3, 0xdf, 0x0d, 0xc1, 0x5c, 0x22,
-	0xb0, 0xa0, 0x0d, 0xcd, 0x2b, 0xa2, 0x52, 0xe0, 0x86, 0x73, 0x49, 0x40, 0xfc, 0x05, 0x8d, 0x43,
-	0xa7, 0xd2, 0x9c, 0xec, 0xd0, 0x82, 0x94, 0x44, 0x4a, 0xc3, 0xd8, 0x29, 0xfb, 0xc4, 0x23, 0x39,
-	0xc6, 0x0b, 0x8f, 0xe4, 0x18, 0x1f, 0x3c, 0x92, 0x63, 0x9c, 0xf0, 0x58, 0x8e, 0xe1, 0xc2, 0x63,
-	0x39, 0x86, 0x1b, 0x8f, 0xe5, 0x18, 0xb8, 0x24, 0x33, 0xf3, 0xf5, 0xb0, 0xa7, 0x9e, 0x00, 0xc6,
-	0x28, 0x93, 0xf4, 0xcc, 0x92, 0x8c, 0xd2, 0x24, 0xbd, 0xe4, 0xfc, 0x5c, 0x7d, 0x84, 0x22, 0xdd,
-	0xcc, 0x7c, 0x24, 0x9e, 0x7e, 0x05, 0x22, 0x5d, 0x96, 0x54, 0x16, 0xa4, 0x16, 0x27, 0xb1, 0x81,
-	0x13, 0xa5, 0x31, 0x20, 0x00, 0x00, 0xff, 0xff, 0xcd, 0x21, 0x15, 0x91, 0xbb, 0x02, 0x00, 0x00,
+	// 597 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x55, 0xdd, 0x6e, 0xd3, 0x30,
+	0x14, 0x6e, 0xd6, 0xee, 0xa7, 0x67, 0x13, 0xb0, 0xa8, 0x8c, 0x6c, 0xa0, 0x50, 0x02, 0x17, 0x15,
+	0xd2, 0x12, 0x0d, 0x78, 0x81, 0xb5, 0x02, 0xd4, 0x1b, 0x54, 0x32, 0x26, 0xa4, 0x5d, 0x50, 0xb9,
+	0x8d, 0x97, 0x45, 0x4d, 0xed, 0xc8, 0x76, 0x23, 0x7a, 0xc9, 0x03, 0x20, 0x78, 0x04, 0x1e, 0x67,
+	0x97, 0xbb, 0xe4, 0x0a, 0xa1, 0xf6, 0x45, 0x50, 0x9c, 0x3a, 0xe9, 0xdf, 0x04, 0xa8, 0x83, 0xbb,
+	0xf8, 0x9c, 0xcf, 0xdf, 0xf9, 0xce, 0x17, 0x1f, 0x1b, 0x1e, 0x47, 0x8c, 0xc6, 0x98, 0x20, 0xd2,
+	0xc5, 0x0e, 0xc3, 0x7e, 0xc0, 0x05, 0x1b, 0x3a, 0xf1, 0x91, 0x83, 0x63, 0x4c, 0x04, 0xb7, 0x23,
+	0x46, 0x05, 0xd5, 0xf7, 0x72, 0x90, 0xad, 0x40, 0x76, 0x7c, 0x74, 0x50, 0xf1, 0xa9, 0x4f, 0x25,
+	0xc4, 0x49, 0xbe, 0x52, 0xb4, 0xf5, 0x16, 0xf4, 0x97, 0xc9, 0xee, 0x37, 0xaf, 0xde, 0xb9, 0x12,
+	0x8c, 0x19, 0xf6, 0xf4, 0xbb, 0xb0, 0x41, 0xce, 0x45, 0x3b, 0xf0, 0x0c, 0xad, 0xaa, 0xd5, 0xca,
+	0xee, 0x3a, 0x39, 0x17, 0x4d, 0x4f, 0x7f, 0x02, 0xb7, 0x10, 0xe7, 0x58, 0xb4, 0xbb, 0x21, 0xe2,
+	0x3c, 0x49, 0xaf, 0xc9, 0xf4, 0x8e, 0x8c, 0x36, 0x92, 0x60, 0xd3, 0xb3, 0x3e, 0x69, 0x70, 0x47,
+	0x72, 0xba, 0x34, 0xc4, 0xaf, 0x19, 0x22, 0x62, 0x45, 0x46, 0x5d, 0x87, 0x12, 0xa3, 0x21, 0x36,
+	0x8a, 0x32, 0x27, 0xbf, 0xf5, 0x07, 0x50, 0x46, 0x9e, 0xc7, 0x30, 0xe7, 0x98, 0x1b, 0xa5, 0x6a,
+	0xb1, 0x56, 0x76, 0xf3, 0xc0, 0xac, 0x06, 0x17, 0xc7, 0xb4, 0xf7, 0xff, 0x35, 0x9c, 0x40, 0x45,
+	0x59, 0x7b, 0x4a, 0xd8, 0x0d, 0x99, 0xfb, 0x1e, 0x8c, 0xb4, 0xaf, 0xc9, 0x9f, 0xad, 0x0f, 0xc2,
+	0xde, 0x69, 0xe4, 0xa1, 0x55, 0x3d, 0xb6, 0xbe, 0x68, 0x70, 0x2f, 0x73, 0xac, 0x71, 0x81, 0x88,
+	0x8f, 0x5b, 0x8c, 0x46, 0x94, 0xaf, 0x6a, 0xdc, 0x7d, 0x28, 0x77, 0x25, 0x5d, 0x02, 0x48, 0xdd,
+	0xdb, 0x4a, 0x03, 0x4d, 0x4f, 0x3f, 0x80, 0xad, 0x28, 0xad, 0xc2, 0x8c, 0x52, 0x9a, 0x53, 0x6b,
+	0xcb, 0x5d, 0x10, 0x74, 0x1c, 0xc9, 0xb3, 0x3d, 0xc7, 0xa9, 0x2d, 0x72, 0xa2, 0x14, 0xc8, 0x26,
+	0x82, 0xb2, 0xb5, 0xc5, 0x60, 0x6f, 0x91, 0x33, 0x0c, 0xfe, 0x65, 0x8f, 0xd6, 0x99, 0xfa, 0x65,
+	0x59, 0xcd, 0x46, 0x32, 0x9c, 0x61, 0xf8, 0xbb, 0x46, 0x1e, 0xc1, 0x4e, 0x57, 0x21, 0xdb, 0x9d,
+	0xe1, 0xa4, 0xf2, 0x76, 0x16, 0xab, 0x0f, 0xad, 0xcf, 0x1a, 0xec, 0xcf, 0x9c, 0x07, 0xa9, 0xa8,
+	0xc1, 0xb0, 0x3c, 0x10, 0x4f, 0x61, 0x57, 0xdd, 0x00, 0xb9, 0xfe, 0xb4, 0xca, 0x6d, 0x36, 0xbd,
+	0xe1, 0x8f, 0x1b, 0x35, 0x01, 0xfa, 0x28, 0x20, 0x02, 0x05, 0x04, 0xb3, 0x49, 0xa7, 0x53, 0x11,
+	0xcb, 0x5f, 0x26, 0x47, 0x9d, 0xcf, 0xbf, 0x91, 0x33, 0x5b, 0x68, 0x6d, 0xa1, 0x50, 0x65, 0x72,
+	0x6f, 0xb5, 0x10, 0x43, 0x7d, 0x55, 0xc1, 0xfa, 0x00, 0x90, 0xb8, 0x7c, 0x12, 0xf8, 0x04, 0xb3,
+	0x6c, 0x64, 0xb5, 0xa9, 0x91, 0x35, 0x01, 0x10, 0xe7, 0x81, 0x4f, 0xfa, 0x98, 0x08, 0xc5, 0x9b,
+	0x47, 0x66, 0x47, 0xba, 0x38, 0x3f, 0xd2, 0xdf, 0xd6, 0xa6, 0xae, 0x95, 0x9b, 0x18, 0xbb, 0xe5,
+	0x9e, 0x14, 0x97, 0x7b, 0xa2, 0xfa, 0x29, 0x5d, 0x77, 0x05, 0xad, 0xcf, 0xe9, 0xd5, 0x0f, 0x41,
+	0x8f, 0x18, 0x8e, 0x03, 0x3a, 0xe0, 0xed, 0x1c, 0xb6, 0x21, 0x61, 0xbb, 0x2a, 0x73, 0x9c, 0xc1,
+	0xeb, 0xb0, 0xc9, 0xa5, 0x75, 0xdc, 0xd8, 0xac, 0x16, 0x6b, 0xdb, 0xcf, 0x2c, 0x7b, 0xf9, 0x63,
+	0x62, 0xe7, 0x2e, 0xd7, 0x4b, 0x97, 0x3f, 0x1e, 0x16, 0x5c, 0xb5, 0xb1, 0xde, 0xbb, 0x1c, 0x99,
+	0xda, 0xd5, 0xc8, 0xd4, 0x7e, 0x8e, 0x4c, 0xed, 0xeb, 0xd8, 0x2c, 0x5c, 0x8d, 0xcd, 0xc2, 0xf7,
+	0xb1, 0x59, 0x80, 0xfd, 0x80, 0x5e, 0x43, 0xd7, 0xd2, 0xce, 0x5e, 0xf8, 0x81, 0xb8, 0x18, 0x74,
+	0xec, 0x2e, 0xed, 0x3b, 0x39, 0xe8, 0x30, 0xa0, 0x53, 0x2b, 0xe7, 0x63, 0xfe, 0xea, 0x89, 0x61,
+	0x84, 0x79, 0x67, 0x43, 0x3e, 0x62, 0xcf, 0x7f, 0x05, 0x00, 0x00, 0xff, 0xff, 0x71, 0x63, 0xc5,
+	0xb1, 0x19, 0x07, 0x00, 0x00,
 }
 
 func (m *EventNFTRegistered) Marshal() (dAtA []byte, err error) {
@@ -571,6 +1154,408 @@ func (m *EventRegistryBulkUpdated) MarshalToSizedBuffer(dAtA []byte) (int, error
 	return len(dAtA) - i, nil
 }
 
+func (m *EventRoleChangeProposed) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventRoleChangeProposed) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventRoleChangeProposed) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Proposer) > 0 {
+		i -= len(m.Proposer)
+		copy(dAtA[i:], m.Proposer)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Proposer)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.ChangeId) > 0 {
+		i -= len(m.ChangeId)
+		copy(dAtA[i:], m.ChangeId)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.ChangeId)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.AssetClassId) > 0 {
+		i -= len(m.AssetClassId)
+		copy(dAtA[i:], m.AssetClassId)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.AssetClassId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.NftId) > 0 {
+		i -= len(m.NftId)
+		copy(dAtA[i:], m.NftId)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.NftId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventRoleChangeApproved) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventRoleChangeApproved) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventRoleChangeApproved) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Approver) > 0 {
+		i -= len(m.Approver)
+		copy(dAtA[i:], m.Approver)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Approver)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.ChangeId) > 0 {
+		i -= len(m.ChangeId)
+		copy(dAtA[i:], m.ChangeId)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.ChangeId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventRoleChangeApplied) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventRoleChangeApplied) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventRoleChangeApplied) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.ChangeId) > 0 {
+		i -= len(m.ChangeId)
+		copy(dAtA[i:], m.ChangeId)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.ChangeId)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.AssetClassId) > 0 {
+		i -= len(m.AssetClassId)
+		copy(dAtA[i:], m.AssetClassId)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.AssetClassId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.NftId) > 0 {
+		i -= len(m.NftId)
+		copy(dAtA[i:], m.NftId)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.NftId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventRoleChangeCancelled) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventRoleChangeCancelled) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventRoleChangeCancelled) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.CancelledBy) > 0 {
+		i -= len(m.CancelledBy)
+		copy(dAtA[i:], m.CancelledBy)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.CancelledBy)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.ChangeId) > 0 {
+		i -= len(m.ChangeId)
+		copy(dAtA[i:], m.ChangeId)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.ChangeId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventRegistryClassCreated) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventRegistryClassCreated) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventRegistryClassCreated) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Maintainer) > 0 {
+		i -= len(m.Maintainer)
+		copy(dAtA[i:], m.Maintainer)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Maintainer)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.AssetClassId) > 0 {
+		i -= len(m.AssetClassId)
+		copy(dAtA[i:], m.AssetClassId)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.AssetClassId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.RegistryClassId) > 0 {
+		i -= len(m.RegistryClassId)
+		copy(dAtA[i:], m.RegistryClassId)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.RegistryClassId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventRegistryClassUpdated) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventRegistryClassUpdated) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventRegistryClassUpdated) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Maintainer) > 0 {
+		i -= len(m.Maintainer)
+		copy(dAtA[i:], m.Maintainer)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Maintainer)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.RegistryClassId) > 0 {
+		i -= len(m.RegistryClassId)
+		copy(dAtA[i:], m.RegistryClassId)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.RegistryClassId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventParamsUpdated) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventParamsUpdated) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventParamsUpdated) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *RoleSigner) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *RoleSigner) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *RoleSigner) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Addresses) > 0 {
+		for iNdEx := len(m.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Addresses[iNdEx])
+			copy(dAtA[i:], m.Addresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.Addresses[iNdEx])))
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
+	if len(m.Assignment) > 0 {
+		i -= len(m.Assignment)
+		copy(dAtA[i:], m.Assignment)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Assignment)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Role) > 0 {
+		i -= len(m.Role)
+		copy(dAtA[i:], m.Role)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Role)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *EventRoleUpdated) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *EventRoleUpdated) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *EventRoleUpdated) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Signers) > 0 {
+		for iNdEx := len(m.Signers) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Signers[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintEvents(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x3a
+		}
+	}
+	if len(m.PreviousAddresses) > 0 {
+		for iNdEx := len(m.PreviousAddresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.PreviousAddresses[iNdEx])
+			copy(dAtA[i:], m.PreviousAddresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.PreviousAddresses[iNdEx])))
+			i--
+			dAtA[i] = 0x32
+		}
+	}
+	if len(m.Addresses) > 0 {
+		for iNdEx := len(m.Addresses) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.Addresses[iNdEx])
+			copy(dAtA[i:], m.Addresses[iNdEx])
+			i = encodeVarintEvents(dAtA, i, uint64(len(m.Addresses[iNdEx])))
+			i--
+			dAtA[i] = 0x2a
+		}
+	}
+	if len(m.Role) > 0 {
+		i -= len(m.Role)
+		copy(dAtA[i:], m.Role)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.Role)))
+		i--
+		dAtA[i] = 0x22
+	}
+	if len(m.RegistryClassId) > 0 {
+		i -= len(m.RegistryClassId)
+		copy(dAtA[i:], m.RegistryClassId)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.RegistryClassId)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.AssetClassId) > 0 {
+		i -= len(m.AssetClassId)
+		copy(dAtA[i:], m.AssetClassId)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.AssetClassId)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.NftId) > 0 {
+		i -= len(m.NftId)
+		copy(dAtA[i:], m.NftId)
+		i = encodeVarintEvents(dAtA, i, uint64(len(m.NftId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintEvents(dAtA []byte, offset int, v uint64) int {
 	offset -= sovEvents(v)
 	base := offset
@@ -683,6 +1668,199 @@ func (m *EventRegistryBulkUpdated) Size() (n int) {
 	l = len(m.AssetClassId)
 	if l > 0 {
 		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventRoleChangeProposed) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.NftId)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.AssetClassId)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.ChangeId)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.Proposer)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventRoleChangeApproved) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ChangeId)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.Approver)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventRoleChangeApplied) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.NftId)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.AssetClassId)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.ChangeId)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventRoleChangeCancelled) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.ChangeId)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.CancelledBy)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventRegistryClassCreated) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.RegistryClassId)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.AssetClassId)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.Maintainer)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventRegistryClassUpdated) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.RegistryClassId)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.Maintainer)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	return n
+}
+
+func (m *EventParamsUpdated) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *RoleSigner) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Role)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.Assignment)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	if len(m.Addresses) > 0 {
+		for _, s := range m.Addresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	return n
+}
+
+func (m *EventRoleUpdated) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.NftId)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.AssetClassId)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.RegistryClassId)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	l = len(m.Role)
+	if l > 0 {
+		n += 1 + l + sovEvents(uint64(l))
+	}
+	if len(m.Addresses) > 0 {
+		for _, s := range m.Addresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if len(m.PreviousAddresses) > 0 {
+		for _, s := range m.PreviousAddresses {
+			l = len(s)
+			n += 1 + l + sovEvents(uint64(l))
+		}
+	}
+	if len(m.Signers) > 0 {
+		for _, e := range m.Signers {
+			l = e.Size()
+			n += 1 + l + sovEvents(uint64(l))
+		}
 	}
 	return n
 }
@@ -1369,6 +2547,1290 @@ func (m *EventRegistryBulkUpdated) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.AssetClassId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventRoleChangeProposed) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventRoleChangeProposed: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventRoleChangeProposed: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NftId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.NftId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AssetClassId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AssetClassId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChangeId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChangeId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Proposer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Proposer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventRoleChangeApproved) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventRoleChangeApproved: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventRoleChangeApproved: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChangeId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChangeId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Approver", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Approver = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventRoleChangeApplied) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventRoleChangeApplied: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventRoleChangeApplied: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NftId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.NftId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AssetClassId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AssetClassId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChangeId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChangeId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventRoleChangeCancelled) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventRoleChangeCancelled: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventRoleChangeCancelled: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ChangeId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ChangeId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CancelledBy", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CancelledBy = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventRegistryClassCreated) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventRegistryClassCreated: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventRegistryClassCreated: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RegistryClassId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RegistryClassId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AssetClassId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AssetClassId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Maintainer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Maintainer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventRegistryClassUpdated) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventRegistryClassUpdated: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventRegistryClassUpdated: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RegistryClassId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RegistryClassId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Maintainer", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Maintainer = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventParamsUpdated) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventParamsUpdated: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventParamsUpdated: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *RoleSigner) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: RoleSigner: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: RoleSigner: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Role", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Role = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Assignment", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Assignment = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Addresses = append(m.Addresses, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipEvents(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *EventRoleUpdated) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowEvents
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: EventRoleUpdated: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: EventRoleUpdated: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NftId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.NftId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AssetClassId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AssetClassId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RegistryClassId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RegistryClassId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Role", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Role = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Addresses", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Addresses = append(m.Addresses, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field PreviousAddresses", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.PreviousAddresses = append(m.PreviousAddresses, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Signers", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowEvents
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthEvents
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthEvents
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Signers = append(m.Signers, RoleSigner{})
+			if err := m.Signers[len(m.Signers)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex

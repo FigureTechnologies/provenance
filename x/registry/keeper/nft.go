@@ -5,6 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	metadatatypes "github.com/provenance-io/provenance/x/metadata/types"
 	"github.com/provenance-io/provenance/x/registry/types"
 )
 
@@ -59,7 +60,27 @@ func (k Keeper) GetNFTOwner(ctx context.Context, assetClassID, nftID *string) sd
 	return k.NFTKeeper.GetOwner(ctx, *assetClassID, *nftID)
 }
 
-// ValidateNFTOwner returns nil if the described NFT is owned by the expOwner.
+// validateAssociateRegistryClassSigner checks whether signer is authorized at the NFT-ownership
+// tier for AssociateRegistryClass. For Metadata Scopes the signer must be one of the scope's
+// data-owner parties; for all other NFTs the signer must be the value/NFT owner.
+func (k Keeper) validateAssociateRegistryClassSigner(ctx context.Context, assetClassID, nftID *string, signer string) error {
+	metadataAddress, isMetadataScope := types.MetadataScopeID(*nftID)
+	if isMetadataScope {
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		scope, found := k.MetadataKeeper.GetScope(sdkCtx, metadataAddress)
+		if !found {
+			return types.NewErrCodeNFTNotFound(*nftID)
+		}
+		for _, party := range scope.Owners {
+			if party.Address == signer && party.Role == metadatatypes.PartyType_PARTY_TYPE_OWNER {
+				return nil
+			}
+		}
+		return types.NewErrCodeUnauthorized("signer is not a data owner (PARTY_TYPE_OWNER) of the scope")
+	}
+	return k.ValidateNFTOwner(ctx, assetClassID, nftID, signer)
+}
+
 // Returns an error if owned by someone else, or if the NFT doesn't exist.
 func (k Keeper) ValidateNFTOwner(ctx context.Context, assetClassID, nftID *string, expOwner string) error {
 	nftOwner := k.GetNFTOwner(ctx, assetClassID, nftID)
