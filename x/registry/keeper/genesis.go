@@ -14,6 +14,19 @@ func (k Keeper) InitGenesis(ctx context.Context, state *types.GenesisState) {
 			panic(err) // Genesis should not fail
 		}
 	}
+	for _, change := range state.PendingRoleChanges {
+		if err := k.PendingRoleChanges.Set(ctx, change.Id, change); err != nil {
+			panic(err) // Genesis should not fail
+		}
+	}
+	for _, class := range state.RegistryClasses {
+		if err := k.RegistryClasses.Set(ctx, class.RegistryClassId, class); err != nil {
+			panic(err) // Genesis should not fail
+		}
+	}
+	if err := k.Params.Set(ctx, state.Params); err != nil {
+		panic(err) // Genesis should not fail
+	}
 }
 
 func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
@@ -26,6 +39,24 @@ func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	if err != nil {
 		panic(err)
 	}
+
+	err = k.PendingRoleChanges.Walk(ctx, nil, func(_ string, value types.PendingRoleChange) (stop bool, err error) {
+		genesis.PendingRoleChanges = append(genesis.PendingRoleChanges, value)
+		return false, nil
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	err = k.RegistryClasses.Walk(ctx, nil, func(_ string, value types.RegistryClass) (stop bool, err error) {
+		genesis.RegistryClasses = append(genesis.RegistryClasses, value)
+		return false, nil
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	genesis.Params = k.GetParams(ctx)
 
 	return genesis
 }

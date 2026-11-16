@@ -37533,6 +37533,666 @@ paths:
             - REGISTRY_ROLE_CUSTODIAN
             - REGISTRY_ROLE_BORROWER
             - REGISTRY_ROLE_ORIGINATOR
+            - REGISTRY_ROLE_LIEN_OWNER
+            - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+            - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+            - REGISTRY_ROLE_PLEDGEE
+      tags:
+        - Registry
+  /provenance/registry/v1/params:
+    get:
+      summary: >-
+        Params returns the registry module parameters, including the default
+        role authorization
+
+        policies.
+      operationId: RegistryParams
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              params:
+                description: params are the current registry module parameters.
+                type: object
+                properties:
+                  role_authorizations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        role:
+                          description: >-
+                            role is the registry role whose assignments are
+                            being controlled.
+                          type: string
+                          enum:
+                            - REGISTRY_ROLE_UNSPECIFIED
+                            - REGISTRY_ROLE_SERVICER
+                            - REGISTRY_ROLE_SUBSERVICER
+                            - REGISTRY_ROLE_CONTROLLER
+                            - REGISTRY_ROLE_CUSTODIAN
+                            - REGISTRY_ROLE_BORROWER
+                            - REGISTRY_ROLE_ORIGINATOR
+                            - REGISTRY_ROLE_LIEN_OWNER
+                            - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                            - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                            - REGISTRY_ROLE_PLEDGEE
+                          default: REGISTRY_ROLE_UNSPECIFIED
+                        authorizations:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              description:
+                                type: string
+                                description: >-
+                                  description is a human-readable explanation of
+                                  this authorization path.
+                              signatures:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    type:
+                                      description: >-
+                                        type controls how the per-role results
+                                        are combined (required_all,
+                                        required_all_if_set, etc.).
+
+                                        Each role is first evaluated on its own
+                                        according to its assignment: an *_ANY
+                                        assignment needs a
+
+                                        signature from at least one of the
+                                        role's addresses, and every other
+                                        assignment needs signatures
+
+                                        from all of them.
+                                      type: string
+                                      enum:
+                                        - SIGNATURE_TYPE_UNSPECIFIED
+                                        - SIGNATURE_TYPE_REQUIRED_ALL
+                                        - SIGNATURE_TYPE_REQUIRED_ALL_IF_SET
+                                        - SIGNATURE_TYPE_REQUIRED_ANY
+                                        - SIGNATURE_TYPE_REQUIRED_ANY_IF_SET
+                                      default: SIGNATURE_TYPE_UNSPECIFIED
+                                    roles:
+                                      type: array
+                                      items:
+                                        type: object
+                                        properties:
+                                          registry_role:
+                                            description: >-
+                                              registry_role is a role managed within
+                                              the registry module state.
+
+                                              Can be used with any assignment type.
+                                            type: string
+                                            enum:
+                                              - REGISTRY_ROLE_UNSPECIFIED
+                                              - REGISTRY_ROLE_SERVICER
+                                              - REGISTRY_ROLE_SUBSERVICER
+                                              - REGISTRY_ROLE_CONTROLLER
+                                              - REGISTRY_ROLE_CUSTODIAN
+                                              - REGISTRY_ROLE_BORROWER
+                                              - REGISTRY_ROLE_ORIGINATOR
+                                              - REGISTRY_ROLE_LIEN_OWNER
+                                              - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                              - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                              - REGISTRY_ROLE_PLEDGEE
+                                            default: REGISTRY_ROLE_UNSPECIFIED
+                                          nft_role:
+                                            description: >-
+                                              nft_role is a role managed by another
+                                              module (e.g., NFT_ROLE_NFT_OWNER from
+                                              metadata).
+
+                                              Can only be used with
+                                              ASSIGNMENT_CURRENT* variants.
+                                            type: string
+                                            enum:
+                                              - NFT_ROLE_UNSPECIFIED
+                                              - NFT_ROLE_NFT_OWNER
+                                            default: NFT_ROLE_UNSPECIFIED
+                                          role_priority:
+                                            description: >-
+                                              role_priority is an ordered list of
+                                              roles; the first one that exists is
+                                              used.
+                                            type: object
+                                            properties:
+                                              entries:
+                                                type: array
+                                                items:
+                                                  type: object
+                                                  properties:
+                                                    registry_role:
+                                                      description: >-
+                                                        registry_role is a role managed within
+                                                        the registry module state.
+                                                      type: string
+                                                      enum:
+                                                        - REGISTRY_ROLE_UNSPECIFIED
+                                                        - REGISTRY_ROLE_SERVICER
+                                                        - REGISTRY_ROLE_SUBSERVICER
+                                                        - REGISTRY_ROLE_CONTROLLER
+                                                        - REGISTRY_ROLE_CUSTODIAN
+                                                        - REGISTRY_ROLE_BORROWER
+                                                        - REGISTRY_ROLE_ORIGINATOR
+                                                        - REGISTRY_ROLE_LIEN_OWNER
+                                                        - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                                        - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                                        - REGISTRY_ROLE_PLEDGEE
+                                                      default: REGISTRY_ROLE_UNSPECIFIED
+                                                    nft_role:
+                                                      description: >-
+                                                        nft_role is a role managed by another
+                                                        module.
+                                                      type: string
+                                                      enum:
+                                                        - NFT_ROLE_UNSPECIFIED
+                                                        - NFT_ROLE_NFT_OWNER
+                                                      default: NFT_ROLE_UNSPECIFIED
+                                                  description: >-
+                                                    RolePriorityEntry is a single entry in a
+                                                    RolePriority list.
+                                                description: >-
+                                                  entries is the ordered list of roles to
+                                                  check. The first existing role is used.
+                                          registry_class_role:
+                                            description: >-
+                                              registry_class_role is a role defined by
+                                              the entry's registry class (e.g.
+
+                                              REGISTRY_CLASS_ROLE_MAINTAINER). Can
+                                              only be used with ASSIGNMENT_CURRENT*
+                                              variants, and only in
+
+                                              registry class role authorizations (not
+                                              in the module params defaults).
+                                            type: string
+                                            enum:
+                                              - REGISTRY_CLASS_ROLE_UNSPECIFIED
+                                              - REGISTRY_CLASS_ROLE_MAINTAINER
+                                            default: REGISTRY_CLASS_ROLE_UNSPECIFIED
+                                          assignment:
+                                            description: >-
+                                              assignment specifies which address(es)
+                                              to resolve for the role.
+                                            type: string
+                                            enum:
+                                              - ASSIGNMENT_UNSPECIFIED
+                                              - ASSIGNMENT_CURRENT
+                                              - ASSIGNMENT_CURRENT_ALL
+                                              - ASSIGNMENT_CURRENT_ANY
+                                              - ASSIGNMENT_NEW
+                                              - ASSIGNMENT_NEW_ANY
+                                              - ASSIGNMENT_NEW_ALL
+                                            default: ASSIGNMENT_UNSPECIFIED
+                                        description: >-
+                                          RoleAssignment specifies which role and
+                                          which assignment type to resolve for a
+                                          signature check.
+                                      description: >-
+                                        roles lists the role assignments that
+                                        must be checked.
+                                  description: >-
+                                    SignatureRequirement defines a single
+                                    signature check within an authorization
+                                    path.
+                                description: >-
+                                  signatures is the ordered list of signature
+                                  requirements that must all be satisfied.
+                            description: >-
+                              Authorization defines one complete approval path
+                              for a role update.
+
+                              All signature requirements in this authorization
+                              must be satisfied for this path to succeed.
+                          description: >-
+                            authorizations is a list of alternative approval
+                            paths.
+
+                            The role update is approved if any single
+                            authorization is fully satisfied.
+                      description: >-
+                        RoleAuthorization configures who must sign to update a
+                        specific role.
+
+                        Contains one or more Authorization paths; the update is
+                        approved if ANY path is fully satisfied.
+                    description: >-
+                      role_authorizations are the default authorization policies
+                      that govern role updates for
+
+                      registry entries that are not associated with a registry
+                      class. They form the middle tier of
+
+                      the two-tier resolution: a registry class policy takes
+                      precedence, then these module defaults,
+
+                      and finally roles without any policy fall back to legacy
+                      NFT-owner authorization.
+                  pending_change_expiry:
+                    type: string
+                    description: >-
+                      pending_change_expiry is how long a pending role change
+                      remains valid after it is proposed.
+
+                      Approvals received after the expiry are rejected and the
+                      change is cleaned up.
+
+                      Zero value (default) means pending changes never expire.
+            description: >-
+              QueryParamsResponse is the response type for the Query/Params RPC
+              method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      tags:
+        - Registry
+  /provenance/registry/v1/pending_role_change/{id}:
+    get:
+      summary: PendingRoleChange returns a single pending role change by its id.
+      operationId: PendingRoleChange
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              pending_role_change:
+                description: >-
+                  pending_role_change is the pending role change for the
+                  requested id.
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: |-
+                      id is the deterministic identifier of this pending change
+                      (a hash of key + the sorted set of role updates).
+                  key:
+                    description: key identifies the registry entry the change applies to.
+                    type: object
+                    properties:
+                      nft_id:
+                        type: string
+                        description: >-
+                          Identifier for the nft that this ledger is linked to.
+
+                          This could be a `x/metadata` scope id or an `x/nft`
+                          nft id.
+
+                          In order to create a ledger for an NFT, the NFT class
+                          must be registered in the ledger module as a
+                          LedgerClass.
+                      asset_class_id:
+                        type: string
+                        description: >-
+                          asset_class_id is the Scope Specification ID or NFT
+                          Class ID.
+
+                          This identifies the class or specification that the
+                          NFT belongs to.
+
+                          If it is a Scope Specification, the address is used,
+                          e.g."scopespec1qnwg86nsatx5pl56muw0v9ytlz3qu3jx6m".
+
+                          Otherwise, it is the NFT Class ID, e.g.
+                          "heloc-loan-class".
+                  role_updates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        role:
+                          description: role is the role to update.
+                          type: string
+                          enum:
+                            - REGISTRY_ROLE_UNSPECIFIED
+                            - REGISTRY_ROLE_SERVICER
+                            - REGISTRY_ROLE_SUBSERVICER
+                            - REGISTRY_ROLE_CONTROLLER
+                            - REGISTRY_ROLE_CUSTODIAN
+                            - REGISTRY_ROLE_BORROWER
+                            - REGISTRY_ROLE_ORIGINATOR
+                            - REGISTRY_ROLE_LIEN_OWNER
+                            - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                            - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                            - REGISTRY_ROLE_PLEDGEE
+                          default: REGISTRY_ROLE_UNSPECIFIED
+                        addresses:
+                          type: array
+                          items:
+                            type: string
+                          description: >-
+                            addresses is the desired set of addresses for this
+                            role.
+
+                            An empty list means the role should be cleared
+                            entirely.
+                      description: >-
+                        RoleUpdate specifies the desired set of addresses for a
+                        single role.
+                    description: >-
+                      role_updates is the desired state for each role the change
+                      will set when applied. The same
+
+                      desired-state, multi-role semantics as MsgSetRoles,
+                      collected through accumulated approvals.
+                  proposer:
+                    type: string
+                    description: proposer is the address that opened the pending change.
+                  approvals:
+                    type: array
+                    items:
+                      type: string
+                    description: >-
+                      approvals is the accumulated set of addresses that have
+                      approved this change.
+                  expires_at:
+                    type: string
+                    format: date-time
+                    description: >-
+                      expires_at is the block time after which this pending
+                      change is no longer valid.
+
+                      Zero value means no expiry.
+            description: >-
+              QueryPendingRoleChangeResponse is the response type for the
+              Query/PendingRoleChange RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: id
+          description: >-
+            id is the deterministic identifier of the pending role change to
+            retrieve.
+          in: path
+          required: true
+          type: string
+      tags:
+        - Registry
+  /provenance/registry/v1/pending_role_changes:
+    get:
+      summary: >-
+        PendingRoleChanges returns the pending role changes, optionally filtered
+        by registry key.
+      operationId: PendingRoleChanges
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              pending_role_changes:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: >-
+                        id is the deterministic identifier of this pending
+                        change
+
+                        (a hash of key + the sorted set of role updates).
+                    key:
+                      description: key identifies the registry entry the change applies to.
+                      type: object
+                      properties:
+                        nft_id:
+                          type: string
+                          description: >-
+                            Identifier for the nft that this ledger is linked
+                            to.
+
+                            This could be a `x/metadata` scope id or an `x/nft`
+                            nft id.
+
+                            In order to create a ledger for an NFT, the NFT
+                            class must be registered in the ledger module as a
+                            LedgerClass.
+                        asset_class_id:
+                          type: string
+                          description: >-
+                            asset_class_id is the Scope Specification ID or NFT
+                            Class ID.
+
+                            This identifies the class or specification that the
+                            NFT belongs to.
+
+                            If it is a Scope Specification, the address is used,
+                            e.g."scopespec1qnwg86nsatx5pl56muw0v9ytlz3qu3jx6m".
+
+                            Otherwise, it is the NFT Class ID, e.g.
+                            "heloc-loan-class".
+                    role_updates:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          role:
+                            description: role is the role to update.
+                            type: string
+                            enum:
+                              - REGISTRY_ROLE_UNSPECIFIED
+                              - REGISTRY_ROLE_SERVICER
+                              - REGISTRY_ROLE_SUBSERVICER
+                              - REGISTRY_ROLE_CONTROLLER
+                              - REGISTRY_ROLE_CUSTODIAN
+                              - REGISTRY_ROLE_BORROWER
+                              - REGISTRY_ROLE_ORIGINATOR
+                              - REGISTRY_ROLE_LIEN_OWNER
+                              - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                              - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                              - REGISTRY_ROLE_PLEDGEE
+                            default: REGISTRY_ROLE_UNSPECIFIED
+                          addresses:
+                            type: array
+                            items:
+                              type: string
+                            description: >-
+                              addresses is the desired set of addresses for this
+                              role.
+
+                              An empty list means the role should be cleared
+                              entirely.
+                        description: >-
+                          RoleUpdate specifies the desired set of addresses for
+                          a single role.
+                      description: >-
+                        role_updates is the desired state for each role the
+                        change will set when applied. The same
+
+                        desired-state, multi-role semantics as MsgSetRoles,
+                        collected through accumulated approvals.
+                    proposer:
+                      type: string
+                      description: proposer is the address that opened the pending change.
+                    approvals:
+                      type: array
+                      items:
+                        type: string
+                      description: >-
+                        approvals is the accumulated set of addresses that have
+                        approved this change.
+                    expires_at:
+                      type: string
+                      format: date-time
+                      description: >-
+                        expires_at is the block time after which this pending
+                        change is no longer valid.
+
+                        Zero value means no expiry.
+                  description: >-
+                    PendingRoleChange is a role change awaiting the approvals
+                    required by the affected roles'
+
+                    authorization policies. Each required party submits a
+                    single-signer approval; once the
+
+                    accumulated approvers satisfy every affected role's policy,
+                    the change is applied atomically
+
+                    and this record is removed.
+                description: >-
+                  pending_role_changes is the collection of pending role
+                  changes.
+              pagination:
+                description: pagination is the pagination details for this response.
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+            description: >-
+              QueryPendingRoleChangesResponse is the paginated response type for
+              the Query/PendingRoleChanges
+
+              RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: key.nft_id
+          description: >-
+            Identifier for the nft that this ledger is linked to.
+
+            This could be a `x/metadata` scope id or an `x/nft` nft id.
+
+            In order to create a ledger for an NFT, the NFT class must be
+            registered in the ledger module as a LedgerClass.
+          in: query
+          required: false
+          type: string
+        - name: key.asset_class_id
+          description: >-
+            asset_class_id is the Scope Specification ID or NFT Class ID.
+
+            This identifies the class or specification that the NFT belongs to.
+
+            If it is a Scope Specification, the address is used,
+            e.g."scopespec1qnwg86nsatx5pl56muw0v9ytlz3qu3jx6m".
+
+            Otherwise, it is the NFT Class ID, e.g. "heloc-loan-class".
+          in: query
+          required: false
+          type: string
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+          in: query
+          required: false
+          type: boolean
       tags:
         - Registry
   /provenance/registry/v1/registry:
@@ -37606,6 +38266,10 @@ paths:
                               - REGISTRY_ROLE_CUSTODIAN
                               - REGISTRY_ROLE_BORROWER
                               - REGISTRY_ROLE_ORIGINATOR
+                              - REGISTRY_ROLE_LIEN_OWNER
+                              - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                              - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                              - REGISTRY_ROLE_PLEDGEE
                             default: REGISTRY_ROLE_UNSPECIFIED
                           addresses:
                             type: array
@@ -37629,6 +38293,20 @@ paths:
 
                         Each role entry contains a role type and the addresses
                         authorized for that role.
+                    registry_class_id:
+                      type: string
+                      description: >-
+                        registry_class_id is the ID of the registry class
+                        governing this entry's authorization rules.
+
+                        If set, role updates for this entry use the
+                        authorization rules defined in the referenced
+
+                        registry class. If empty, role updates fall back to the
+                        module params default policies, and
+
+                        then to legacy NFT owner authorization for any role with
+                        no policy.
                   description: >-
                     RegistryEntry represents a single entry in the registry,
                     mapping a blockchain address to its roles.
@@ -37816,6 +38494,10 @@ paths:
                             - REGISTRY_ROLE_CUSTODIAN
                             - REGISTRY_ROLE_BORROWER
                             - REGISTRY_ROLE_ORIGINATOR
+                            - REGISTRY_ROLE_LIEN_OWNER
+                            - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                            - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                            - REGISTRY_ROLE_PLEDGEE
                           default: REGISTRY_ROLE_UNSPECIFIED
                         addresses:
                           type: array
@@ -37839,6 +38521,20 @@ paths:
 
                       Each role entry contains a role type and the addresses
                       authorized for that role.
+                  registry_class_id:
+                    type: string
+                    description: >-
+                      registry_class_id is the ID of the registry class
+                      governing this entry's authorization rules.
+
+                      If set, role updates for this entry use the authorization
+                      rules defined in the referenced
+
+                      registry class. If empty, role updates fall back to the
+                      module params default policies, and
+
+                      then to legacy NFT owner authorization for any role with
+                      no policy.
             description: >-
               QueryGetRegistryResponse is the response type for the
               Query/GetRegistry RPC method.
@@ -37887,6 +38583,780 @@ paths:
           in: path
           required: true
           type: string
+      tags:
+        - Registry
+  /provenance/registry/v1/registry_class/{registry_class_id}:
+    get:
+      summary: >-
+        RegistryClass returns a single registry class (including its
+        authorization policy) by id.
+      operationId: RegistryClass
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              registry_class:
+                description: >-
+                  registry_class is the registry class for the requested id,
+                  including its authorization policy.
+                type: object
+                properties:
+                  registry_class_id:
+                    type: string
+                    description: >-
+                      registry_class_id is the unique identifier for this
+                      registry class (e.g. "loan-registry-v1").
+
+                      It is required since NFT classes do not have an inherent
+                      owner, and must be unique across
+
+                      all registry classes.
+                  asset_class_id:
+                    type: string
+                    description: >-
+                      asset_class_id is the Scope Specification ID or NFT Class
+                      ID this registry class governs.
+                  maintainer:
+                    type: string
+                    description: >-
+                      maintainer is the address authorized to manage this
+                      registry class. It is permanent and
+
+                      cannot be changed once set.
+                  role_authorizations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        role:
+                          description: >-
+                            role is the registry role whose assignments are
+                            being controlled.
+                          type: string
+                          enum:
+                            - REGISTRY_ROLE_UNSPECIFIED
+                            - REGISTRY_ROLE_SERVICER
+                            - REGISTRY_ROLE_SUBSERVICER
+                            - REGISTRY_ROLE_CONTROLLER
+                            - REGISTRY_ROLE_CUSTODIAN
+                            - REGISTRY_ROLE_BORROWER
+                            - REGISTRY_ROLE_ORIGINATOR
+                            - REGISTRY_ROLE_LIEN_OWNER
+                            - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                            - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                            - REGISTRY_ROLE_PLEDGEE
+                          default: REGISTRY_ROLE_UNSPECIFIED
+                        authorizations:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              description:
+                                type: string
+                                description: >-
+                                  description is a human-readable explanation of
+                                  this authorization path.
+                              signatures:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    type:
+                                      description: >-
+                                        type controls how the per-role results
+                                        are combined (required_all,
+                                        required_all_if_set, etc.).
+
+                                        Each role is first evaluated on its own
+                                        according to its assignment: an *_ANY
+                                        assignment needs a
+
+                                        signature from at least one of the
+                                        role's addresses, and every other
+                                        assignment needs signatures
+
+                                        from all of them.
+                                      type: string
+                                      enum:
+                                        - SIGNATURE_TYPE_UNSPECIFIED
+                                        - SIGNATURE_TYPE_REQUIRED_ALL
+                                        - SIGNATURE_TYPE_REQUIRED_ALL_IF_SET
+                                        - SIGNATURE_TYPE_REQUIRED_ANY
+                                        - SIGNATURE_TYPE_REQUIRED_ANY_IF_SET
+                                      default: SIGNATURE_TYPE_UNSPECIFIED
+                                    roles:
+                                      type: array
+                                      items:
+                                        type: object
+                                        properties:
+                                          registry_role:
+                                            description: >-
+                                              registry_role is a role managed within
+                                              the registry module state.
+
+                                              Can be used with any assignment type.
+                                            type: string
+                                            enum:
+                                              - REGISTRY_ROLE_UNSPECIFIED
+                                              - REGISTRY_ROLE_SERVICER
+                                              - REGISTRY_ROLE_SUBSERVICER
+                                              - REGISTRY_ROLE_CONTROLLER
+                                              - REGISTRY_ROLE_CUSTODIAN
+                                              - REGISTRY_ROLE_BORROWER
+                                              - REGISTRY_ROLE_ORIGINATOR
+                                              - REGISTRY_ROLE_LIEN_OWNER
+                                              - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                              - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                              - REGISTRY_ROLE_PLEDGEE
+                                            default: REGISTRY_ROLE_UNSPECIFIED
+                                          nft_role:
+                                            description: >-
+                                              nft_role is a role managed by another
+                                              module (e.g., NFT_ROLE_NFT_OWNER from
+                                              metadata).
+
+                                              Can only be used with
+                                              ASSIGNMENT_CURRENT* variants.
+                                            type: string
+                                            enum:
+                                              - NFT_ROLE_UNSPECIFIED
+                                              - NFT_ROLE_NFT_OWNER
+                                            default: NFT_ROLE_UNSPECIFIED
+                                          role_priority:
+                                            description: >-
+                                              role_priority is an ordered list of
+                                              roles; the first one that exists is
+                                              used.
+                                            type: object
+                                            properties:
+                                              entries:
+                                                type: array
+                                                items:
+                                                  type: object
+                                                  properties:
+                                                    registry_role:
+                                                      description: >-
+                                                        registry_role is a role managed within
+                                                        the registry module state.
+                                                      type: string
+                                                      enum:
+                                                        - REGISTRY_ROLE_UNSPECIFIED
+                                                        - REGISTRY_ROLE_SERVICER
+                                                        - REGISTRY_ROLE_SUBSERVICER
+                                                        - REGISTRY_ROLE_CONTROLLER
+                                                        - REGISTRY_ROLE_CUSTODIAN
+                                                        - REGISTRY_ROLE_BORROWER
+                                                        - REGISTRY_ROLE_ORIGINATOR
+                                                        - REGISTRY_ROLE_LIEN_OWNER
+                                                        - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                                        - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                                        - REGISTRY_ROLE_PLEDGEE
+                                                      default: REGISTRY_ROLE_UNSPECIFIED
+                                                    nft_role:
+                                                      description: >-
+                                                        nft_role is a role managed by another
+                                                        module.
+                                                      type: string
+                                                      enum:
+                                                        - NFT_ROLE_UNSPECIFIED
+                                                        - NFT_ROLE_NFT_OWNER
+                                                      default: NFT_ROLE_UNSPECIFIED
+                                                  description: >-
+                                                    RolePriorityEntry is a single entry in a
+                                                    RolePriority list.
+                                                description: >-
+                                                  entries is the ordered list of roles to
+                                                  check. The first existing role is used.
+                                          registry_class_role:
+                                            description: >-
+                                              registry_class_role is a role defined by
+                                              the entry's registry class (e.g.
+
+                                              REGISTRY_CLASS_ROLE_MAINTAINER). Can
+                                              only be used with ASSIGNMENT_CURRENT*
+                                              variants, and only in
+
+                                              registry class role authorizations (not
+                                              in the module params defaults).
+                                            type: string
+                                            enum:
+                                              - REGISTRY_CLASS_ROLE_UNSPECIFIED
+                                              - REGISTRY_CLASS_ROLE_MAINTAINER
+                                            default: REGISTRY_CLASS_ROLE_UNSPECIFIED
+                                          assignment:
+                                            description: >-
+                                              assignment specifies which address(es)
+                                              to resolve for the role.
+                                            type: string
+                                            enum:
+                                              - ASSIGNMENT_UNSPECIFIED
+                                              - ASSIGNMENT_CURRENT
+                                              - ASSIGNMENT_CURRENT_ALL
+                                              - ASSIGNMENT_CURRENT_ANY
+                                              - ASSIGNMENT_NEW
+                                              - ASSIGNMENT_NEW_ANY
+                                              - ASSIGNMENT_NEW_ALL
+                                            default: ASSIGNMENT_UNSPECIFIED
+                                        description: >-
+                                          RoleAssignment specifies which role and
+                                          which assignment type to resolve for a
+                                          signature check.
+                                      description: >-
+                                        roles lists the role assignments that
+                                        must be checked.
+                                  description: >-
+                                    SignatureRequirement defines a single
+                                    signature check within an authorization
+                                    path.
+                                description: >-
+                                  signatures is the ordered list of signature
+                                  requirements that must all be satisfied.
+                            description: >-
+                              Authorization defines one complete approval path
+                              for a role update.
+
+                              All signature requirements in this authorization
+                              must be satisfied for this path to succeed.
+                          description: >-
+                            authorizations is a list of alternative approval
+                            paths.
+
+                            The role update is approved if any single
+                            authorization is fully satisfied.
+                      description: >-
+                        RoleAuthorization configures who must sign to update a
+                        specific role.
+
+                        Contains one or more Authorization paths; the update is
+                        approved if ANY path is fully satisfied.
+                    description: >-
+                      role_authorizations are the authorization rules for role
+                      updates within this asset class.
+            description: >-
+              QueryRegistryClassResponse is the response type for the
+              Query/RegistryClass RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: registry_class_id
+          description: >-
+            registry_class_id is the unique identifier of the registry class to
+            retrieve.
+          in: path
+          required: true
+          type: string
+      tags:
+        - Registry
+  /provenance/registry/v1/registry_classes:
+    get:
+      summary: RegistryClasses returns all registry classes.
+      operationId: RegistryClasses
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              registry_classes:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    registry_class_id:
+                      type: string
+                      description: >-
+                        registry_class_id is the unique identifier for this
+                        registry class (e.g. "loan-registry-v1").
+
+                        It is required since NFT classes do not have an inherent
+                        owner, and must be unique across
+
+                        all registry classes.
+                    asset_class_id:
+                      type: string
+                      description: >-
+                        asset_class_id is the Scope Specification ID or NFT
+                        Class ID this registry class governs.
+                    maintainer:
+                      type: string
+                      description: >-
+                        maintainer is the address authorized to manage this
+                        registry class. It is permanent and
+
+                        cannot be changed once set.
+                    role_authorizations:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          role:
+                            description: >-
+                              role is the registry role whose assignments are
+                              being controlled.
+                            type: string
+                            enum:
+                              - REGISTRY_ROLE_UNSPECIFIED
+                              - REGISTRY_ROLE_SERVICER
+                              - REGISTRY_ROLE_SUBSERVICER
+                              - REGISTRY_ROLE_CONTROLLER
+                              - REGISTRY_ROLE_CUSTODIAN
+                              - REGISTRY_ROLE_BORROWER
+                              - REGISTRY_ROLE_ORIGINATOR
+                              - REGISTRY_ROLE_LIEN_OWNER
+                              - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                              - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                              - REGISTRY_ROLE_PLEDGEE
+                            default: REGISTRY_ROLE_UNSPECIFIED
+                          authorizations:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                description:
+                                  type: string
+                                  description: >-
+                                    description is a human-readable explanation
+                                    of this authorization path.
+                                signatures:
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      type:
+                                        description: >-
+                                          type controls how the per-role results
+                                          are combined (required_all,
+                                          required_all_if_set, etc.).
+
+                                          Each role is first evaluated on its own
+                                          according to its assignment: an *_ANY
+                                          assignment needs a
+
+                                          signature from at least one of the
+                                          role's addresses, and every other
+                                          assignment needs signatures
+
+                                          from all of them.
+                                        type: string
+                                        enum:
+                                          - SIGNATURE_TYPE_UNSPECIFIED
+                                          - SIGNATURE_TYPE_REQUIRED_ALL
+                                          - SIGNATURE_TYPE_REQUIRED_ALL_IF_SET
+                                          - SIGNATURE_TYPE_REQUIRED_ANY
+                                          - SIGNATURE_TYPE_REQUIRED_ANY_IF_SET
+                                        default: SIGNATURE_TYPE_UNSPECIFIED
+                                      roles:
+                                        type: array
+                                        items:
+                                          type: object
+                                          properties:
+                                            registry_role:
+                                              description: >-
+                                                registry_role is a role managed within
+                                                the registry module state.
+
+                                                Can be used with any assignment type.
+                                              type: string
+                                              enum:
+                                                - REGISTRY_ROLE_UNSPECIFIED
+                                                - REGISTRY_ROLE_SERVICER
+                                                - REGISTRY_ROLE_SUBSERVICER
+                                                - REGISTRY_ROLE_CONTROLLER
+                                                - REGISTRY_ROLE_CUSTODIAN
+                                                - REGISTRY_ROLE_BORROWER
+                                                - REGISTRY_ROLE_ORIGINATOR
+                                                - REGISTRY_ROLE_LIEN_OWNER
+                                                - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                                - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                                - REGISTRY_ROLE_PLEDGEE
+                                              default: REGISTRY_ROLE_UNSPECIFIED
+                                            nft_role:
+                                              description: >-
+                                                nft_role is a role managed by another
+                                                module (e.g., NFT_ROLE_NFT_OWNER from
+                                                metadata).
+
+                                                Can only be used with
+                                                ASSIGNMENT_CURRENT* variants.
+                                              type: string
+                                              enum:
+                                                - NFT_ROLE_UNSPECIFIED
+                                                - NFT_ROLE_NFT_OWNER
+                                              default: NFT_ROLE_UNSPECIFIED
+                                            role_priority:
+                                              description: >-
+                                                role_priority is an ordered list of
+                                                roles; the first one that exists is
+                                                used.
+                                              type: object
+                                              properties:
+                                                entries:
+                                                  type: array
+                                                  items:
+                                                    type: object
+                                                    properties:
+                                                      registry_role:
+                                                        description: >-
+                                                          registry_role is a role managed within
+                                                          the registry module state.
+                                                        type: string
+                                                        enum:
+                                                          - REGISTRY_ROLE_UNSPECIFIED
+                                                          - REGISTRY_ROLE_SERVICER
+                                                          - REGISTRY_ROLE_SUBSERVICER
+                                                          - REGISTRY_ROLE_CONTROLLER
+                                                          - REGISTRY_ROLE_CUSTODIAN
+                                                          - REGISTRY_ROLE_BORROWER
+                                                          - REGISTRY_ROLE_ORIGINATOR
+                                                          - REGISTRY_ROLE_LIEN_OWNER
+                                                          - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                                          - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                                          - REGISTRY_ROLE_PLEDGEE
+                                                        default: REGISTRY_ROLE_UNSPECIFIED
+                                                      nft_role:
+                                                        description: >-
+                                                          nft_role is a role managed by another
+                                                          module.
+                                                        type: string
+                                                        enum:
+                                                          - NFT_ROLE_UNSPECIFIED
+                                                          - NFT_ROLE_NFT_OWNER
+                                                        default: NFT_ROLE_UNSPECIFIED
+                                                    description: >-
+                                                      RolePriorityEntry is a single entry in a
+                                                      RolePriority list.
+                                                  description: >-
+                                                    entries is the ordered list of roles to
+                                                    check. The first existing role is used.
+                                            registry_class_role:
+                                              description: >-
+                                                registry_class_role is a role defined by
+                                                the entry's registry class (e.g.
+
+                                                REGISTRY_CLASS_ROLE_MAINTAINER). Can
+                                                only be used with ASSIGNMENT_CURRENT*
+                                                variants, and only in
+
+                                                registry class role authorizations (not
+                                                in the module params defaults).
+                                              type: string
+                                              enum:
+                                                - REGISTRY_CLASS_ROLE_UNSPECIFIED
+                                                - REGISTRY_CLASS_ROLE_MAINTAINER
+                                              default: REGISTRY_CLASS_ROLE_UNSPECIFIED
+                                            assignment:
+                                              description: >-
+                                                assignment specifies which address(es)
+                                                to resolve for the role.
+                                              type: string
+                                              enum:
+                                                - ASSIGNMENT_UNSPECIFIED
+                                                - ASSIGNMENT_CURRENT
+                                                - ASSIGNMENT_CURRENT_ALL
+                                                - ASSIGNMENT_CURRENT_ANY
+                                                - ASSIGNMENT_NEW
+                                                - ASSIGNMENT_NEW_ANY
+                                                - ASSIGNMENT_NEW_ALL
+                                              default: ASSIGNMENT_UNSPECIFIED
+                                          description: >-
+                                            RoleAssignment specifies which role and
+                                            which assignment type to resolve for a
+                                            signature check.
+                                        description: >-
+                                          roles lists the role assignments that
+                                          must be checked.
+                                    description: >-
+                                      SignatureRequirement defines a single
+                                      signature check within an authorization
+                                      path.
+                                  description: >-
+                                    signatures is the ordered list of signature
+                                    requirements that must all be satisfied.
+                              description: >-
+                                Authorization defines one complete approval path
+                                for a role update.
+
+                                All signature requirements in this authorization
+                                must be satisfied for this path to succeed.
+                            description: >-
+                              authorizations is a list of alternative approval
+                              paths.
+
+                              The role update is approved if any single
+                              authorization is fully satisfied.
+                        description: >-
+                          RoleAuthorization configures who must sign to update a
+                          specific role.
+
+                          Contains one or more Authorization paths; the update
+                          is approved if ANY path is fully satisfied.
+                      description: >-
+                        role_authorizations are the authorization rules for role
+                        updates within this asset class.
+                  description: >-
+                    RegistryClass provides asset class-level authorization over
+                    role updates.
+
+                    It defines authorization rules for an entire NFT collection
+                    (asset class), allowing the
+
+                    maintainer to establish custom role update policies without
+                    requiring governance proposals.
+                description: registry_classes is the collection of registry classes.
+              pagination:
+                description: pagination is the pagination details for this response.
+                type: object
+                properties:
+                  next_key:
+                    type: string
+                    format: byte
+                    description: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently. It will be empty if
+                      there are no more results.
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+            description: >-
+              QueryRegistryClassesResponse is the paginated response type for
+              the Query/RegistryClasses RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.count_total
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Registry
+  /provenance/registry/v1/validate_role_change:
+    post:
+      summary: >-
+        ValidateRoleChange performs a read-only dry-run of a role-change batch,
+        reporting whether the
+
+        supplied approvers would satisfy every affected role's authorization
+        policy without writing
+
+        any state.
+      operationId: ValidateRoleChange
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: >-
+                  error contains the authorization failure explanation. It is
+                  empty when the change is authorized.
+              authorized:
+                type: boolean
+                description: >-
+                  authorized is true if the supplied approvers satisfy every
+                  affected role's policy.
+            description: >-
+              QueryValidateRoleChangeResponse is the response type for the
+              Query/ValidateRoleChange RPC method.
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: body
+          description: >-
+            QueryValidateRoleChangeRequest is the request type for the
+            Query/ValidateRoleChange RPC method.
+
+            It describes a candidate role-change batch and the set of approvers
+            to test against each affected
+
+            role's authorization policy.
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              key:
+                description: key identifies the registry entry the role change targets.
+                type: object
+                properties:
+                  nft_id:
+                    type: string
+                    description: >-
+                      Identifier for the nft that this ledger is linked to.
+
+                      This could be a `x/metadata` scope id or an `x/nft` nft
+                      id.
+
+                      In order to create a ledger for an NFT, the NFT class must
+                      be registered in the ledger module as a LedgerClass.
+                  asset_class_id:
+                    type: string
+                    description: >-
+                      asset_class_id is the Scope Specification ID or NFT Class
+                      ID.
+
+                      This identifies the class or specification that the NFT
+                      belongs to.
+
+                      If it is a Scope Specification, the address is used,
+                      e.g."scopespec1qnwg86nsatx5pl56muw0v9ytlz3qu3jx6m".
+
+                      Otherwise, it is the NFT Class ID, e.g.
+                      "heloc-loan-class".
+              role_updates:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    role:
+                      description: role is the role to update.
+                      type: string
+                      enum:
+                        - REGISTRY_ROLE_UNSPECIFIED
+                        - REGISTRY_ROLE_SERVICER
+                        - REGISTRY_ROLE_SUBSERVICER
+                        - REGISTRY_ROLE_CONTROLLER
+                        - REGISTRY_ROLE_CUSTODIAN
+                        - REGISTRY_ROLE_BORROWER
+                        - REGISTRY_ROLE_ORIGINATOR
+                        - REGISTRY_ROLE_LIEN_OWNER
+                        - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                        - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                        - REGISTRY_ROLE_PLEDGEE
+                      default: REGISTRY_ROLE_UNSPECIFIED
+                    addresses:
+                      type: array
+                      items:
+                        type: string
+                      description: |-
+                        addresses is the desired set of addresses for this role.
+                        An empty list means the role should be cleared entirely.
+                  description: >-
+                    RoleUpdate specifies the desired set of addresses for a
+                    single role.
+                description: >-
+                  role_updates is the desired-state batch to evaluate (same
+                  shape as MsgSetRoles).
+              approvers:
+                type: array
+                items:
+                  type: string
+                description: >-
+                  approvers is the accumulated/candidate set of approver
+                  addresses to test.
+            description: >-
+              QueryValidateRoleChangeRequest is the request type for the
+              Query/ValidateRoleChange RPC method.
+
+              It describes a candidate role-change batch and the set of
+              approvers to test against each affected
+
+              role's authorization policy.
       tags:
         - Registry
   /provenance/trigger/v1/triggers:
@@ -97879,6 +99349,530 @@ definitions:
     description: >-
       MsgUpdateAutoResponsesResponse defines the Msg/UpdateAutoResponse response
       type.
+  provenance.registry.v1.Assignment:
+    type: string
+    enum:
+      - ASSIGNMENT_UNSPECIFIED
+      - ASSIGNMENT_CURRENT
+      - ASSIGNMENT_CURRENT_ALL
+      - ASSIGNMENT_CURRENT_ANY
+      - ASSIGNMENT_NEW
+      - ASSIGNMENT_NEW_ANY
+      - ASSIGNMENT_NEW_ALL
+    default: ASSIGNMENT_UNSPECIFIED
+    description: >-
+      Assignment describes which address(es) to resolve for a role in an
+      authorization check.
+
+       - ASSIGNMENT_UNSPECIFIED: ASSIGNMENT_UNSPECIFIED is the default/unset value.
+       - ASSIGNMENT_CURRENT: ASSIGNMENT_CURRENT resolves exactly one address currently assigned to the role.
+      Fails if the role has multiple addresses assigned.
+       - ASSIGNMENT_CURRENT_ALL: ASSIGNMENT_CURRENT_ALL resolves all addresses currently assigned to the role.
+      All of them must sign.
+       - ASSIGNMENT_CURRENT_ANY: ASSIGNMENT_CURRENT_ANY resolves any one of the addresses currently assigned to the role.
+      At least one must sign.
+       - ASSIGNMENT_NEW: ASSIGNMENT_NEW resolves exactly one new address being assigned to the role.
+      Fails if multiple new addresses are provided.
+
+      Invalid for NftRole (read-only from registry perspective).
+       - ASSIGNMENT_NEW_ANY: ASSIGNMENT_NEW_ANY resolves any one of the new addresses being assigned to the role.
+      Invalid for NftRole.
+       - ASSIGNMENT_NEW_ALL: ASSIGNMENT_NEW_ALL resolves all new addresses being assigned to the role.
+      All of them must sign.
+
+      Invalid for NftRole.
+  provenance.registry.v1.Authorization:
+    type: object
+    properties:
+      description:
+        type: string
+        description: >-
+          description is a human-readable explanation of this authorization
+          path.
+      signatures:
+        type: array
+        items:
+          type: object
+          properties:
+            type:
+              description: >-
+                type controls how the per-role results are combined
+                (required_all, required_all_if_set, etc.).
+
+                Each role is first evaluated on its own according to its
+                assignment: an *_ANY assignment needs a
+
+                signature from at least one of the role's addresses, and every
+                other assignment needs signatures
+
+                from all of them.
+              type: string
+              enum:
+                - SIGNATURE_TYPE_UNSPECIFIED
+                - SIGNATURE_TYPE_REQUIRED_ALL
+                - SIGNATURE_TYPE_REQUIRED_ALL_IF_SET
+                - SIGNATURE_TYPE_REQUIRED_ANY
+                - SIGNATURE_TYPE_REQUIRED_ANY_IF_SET
+              default: SIGNATURE_TYPE_UNSPECIFIED
+            roles:
+              type: array
+              items:
+                type: object
+                properties:
+                  registry_role:
+                    description: >-
+                      registry_role is a role managed within the registry module
+                      state.
+
+                      Can be used with any assignment type.
+                    type: string
+                    enum:
+                      - REGISTRY_ROLE_UNSPECIFIED
+                      - REGISTRY_ROLE_SERVICER
+                      - REGISTRY_ROLE_SUBSERVICER
+                      - REGISTRY_ROLE_CONTROLLER
+                      - REGISTRY_ROLE_CUSTODIAN
+                      - REGISTRY_ROLE_BORROWER
+                      - REGISTRY_ROLE_ORIGINATOR
+                      - REGISTRY_ROLE_LIEN_OWNER
+                      - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                      - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                      - REGISTRY_ROLE_PLEDGEE
+                    default: REGISTRY_ROLE_UNSPECIFIED
+                  nft_role:
+                    description: >-
+                      nft_role is a role managed by another module (e.g.,
+                      NFT_ROLE_NFT_OWNER from metadata).
+
+                      Can only be used with ASSIGNMENT_CURRENT* variants.
+                    type: string
+                    enum:
+                      - NFT_ROLE_UNSPECIFIED
+                      - NFT_ROLE_NFT_OWNER
+                    default: NFT_ROLE_UNSPECIFIED
+                  role_priority:
+                    description: >-
+                      role_priority is an ordered list of roles; the first one
+                      that exists is used.
+                    type: object
+                    properties:
+                      entries:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            registry_role:
+                              description: >-
+                                registry_role is a role managed within the
+                                registry module state.
+                              type: string
+                              enum:
+                                - REGISTRY_ROLE_UNSPECIFIED
+                                - REGISTRY_ROLE_SERVICER
+                                - REGISTRY_ROLE_SUBSERVICER
+                                - REGISTRY_ROLE_CONTROLLER
+                                - REGISTRY_ROLE_CUSTODIAN
+                                - REGISTRY_ROLE_BORROWER
+                                - REGISTRY_ROLE_ORIGINATOR
+                                - REGISTRY_ROLE_LIEN_OWNER
+                                - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                - REGISTRY_ROLE_PLEDGEE
+                              default: REGISTRY_ROLE_UNSPECIFIED
+                            nft_role:
+                              description: nft_role is a role managed by another module.
+                              type: string
+                              enum:
+                                - NFT_ROLE_UNSPECIFIED
+                                - NFT_ROLE_NFT_OWNER
+                              default: NFT_ROLE_UNSPECIFIED
+                          description: >-
+                            RolePriorityEntry is a single entry in a
+                            RolePriority list.
+                        description: >-
+                          entries is the ordered list of roles to check. The
+                          first existing role is used.
+                  registry_class_role:
+                    description: >-
+                      registry_class_role is a role defined by the entry's
+                      registry class (e.g.
+
+                      REGISTRY_CLASS_ROLE_MAINTAINER). Can only be used with
+                      ASSIGNMENT_CURRENT* variants, and only in
+
+                      registry class role authorizations (not in the module
+                      params defaults).
+                    type: string
+                    enum:
+                      - REGISTRY_CLASS_ROLE_UNSPECIFIED
+                      - REGISTRY_CLASS_ROLE_MAINTAINER
+                    default: REGISTRY_CLASS_ROLE_UNSPECIFIED
+                  assignment:
+                    description: >-
+                      assignment specifies which address(es) to resolve for the
+                      role.
+                    type: string
+                    enum:
+                      - ASSIGNMENT_UNSPECIFIED
+                      - ASSIGNMENT_CURRENT
+                      - ASSIGNMENT_CURRENT_ALL
+                      - ASSIGNMENT_CURRENT_ANY
+                      - ASSIGNMENT_NEW
+                      - ASSIGNMENT_NEW_ANY
+                      - ASSIGNMENT_NEW_ALL
+                    default: ASSIGNMENT_UNSPECIFIED
+                description: >-
+                  RoleAssignment specifies which role and which assignment type
+                  to resolve for a signature check.
+              description: roles lists the role assignments that must be checked.
+          description: >-
+            SignatureRequirement defines a single signature check within an
+            authorization path.
+        description: >-
+          signatures is the ordered list of signature requirements that must all
+          be satisfied.
+    description: >-
+      Authorization defines one complete approval path for a role update.
+
+      All signature requirements in this authorization must be satisfied for
+      this path to succeed.
+  provenance.registry.v1.NftRole:
+    type: string
+    enum:
+      - NFT_ROLE_UNSPECIFIED
+      - NFT_ROLE_NFT_OWNER
+    default: NFT_ROLE_UNSPECIFIED
+    description: >-
+      NftRole identifies roles managed outside the registry module (e.g., by the
+      metadata module).
+
+      These roles are read-only from the registry module's perspective.
+
+       - NFT_ROLE_UNSPECIFIED: NFT_ROLE_UNSPECIFIED is the default/unset value.
+       - NFT_ROLE_NFT_OWNER: NFT_ROLE_NFT_OWNER is the owner of the NFT.
+      For metadata-scope NFTs, this is the scope value owner; otherwise it's the
+      owner from the x/nft module.
+  provenance.registry.v1.Params:
+    type: object
+    properties:
+      role_authorizations:
+        type: array
+        items:
+          type: object
+          properties:
+            role:
+              description: >-
+                role is the registry role whose assignments are being
+                controlled.
+              type: string
+              enum:
+                - REGISTRY_ROLE_UNSPECIFIED
+                - REGISTRY_ROLE_SERVICER
+                - REGISTRY_ROLE_SUBSERVICER
+                - REGISTRY_ROLE_CONTROLLER
+                - REGISTRY_ROLE_CUSTODIAN
+                - REGISTRY_ROLE_BORROWER
+                - REGISTRY_ROLE_ORIGINATOR
+                - REGISTRY_ROLE_LIEN_OWNER
+                - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                - REGISTRY_ROLE_PLEDGEE
+              default: REGISTRY_ROLE_UNSPECIFIED
+            authorizations:
+              type: array
+              items:
+                type: object
+                properties:
+                  description:
+                    type: string
+                    description: >-
+                      description is a human-readable explanation of this
+                      authorization path.
+                  signatures:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          description: >-
+                            type controls how the per-role results are combined
+                            (required_all, required_all_if_set, etc.).
+
+                            Each role is first evaluated on its own according to
+                            its assignment: an *_ANY assignment needs a
+
+                            signature from at least one of the role's addresses,
+                            and every other assignment needs signatures
+
+                            from all of them.
+                          type: string
+                          enum:
+                            - SIGNATURE_TYPE_UNSPECIFIED
+                            - SIGNATURE_TYPE_REQUIRED_ALL
+                            - SIGNATURE_TYPE_REQUIRED_ALL_IF_SET
+                            - SIGNATURE_TYPE_REQUIRED_ANY
+                            - SIGNATURE_TYPE_REQUIRED_ANY_IF_SET
+                          default: SIGNATURE_TYPE_UNSPECIFIED
+                        roles:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              registry_role:
+                                description: >-
+                                  registry_role is a role managed within the
+                                  registry module state.
+
+                                  Can be used with any assignment type.
+                                type: string
+                                enum:
+                                  - REGISTRY_ROLE_UNSPECIFIED
+                                  - REGISTRY_ROLE_SERVICER
+                                  - REGISTRY_ROLE_SUBSERVICER
+                                  - REGISTRY_ROLE_CONTROLLER
+                                  - REGISTRY_ROLE_CUSTODIAN
+                                  - REGISTRY_ROLE_BORROWER
+                                  - REGISTRY_ROLE_ORIGINATOR
+                                  - REGISTRY_ROLE_LIEN_OWNER
+                                  - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                  - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                  - REGISTRY_ROLE_PLEDGEE
+                                default: REGISTRY_ROLE_UNSPECIFIED
+                              nft_role:
+                                description: >-
+                                  nft_role is a role managed by another module
+                                  (e.g., NFT_ROLE_NFT_OWNER from metadata).
+
+                                  Can only be used with ASSIGNMENT_CURRENT*
+                                  variants.
+                                type: string
+                                enum:
+                                  - NFT_ROLE_UNSPECIFIED
+                                  - NFT_ROLE_NFT_OWNER
+                                default: NFT_ROLE_UNSPECIFIED
+                              role_priority:
+                                description: >-
+                                  role_priority is an ordered list of roles; the
+                                  first one that exists is used.
+                                type: object
+                                properties:
+                                  entries:
+                                    type: array
+                                    items:
+                                      type: object
+                                      properties:
+                                        registry_role:
+                                          description: >-
+                                            registry_role is a role managed within
+                                            the registry module state.
+                                          type: string
+                                          enum:
+                                            - REGISTRY_ROLE_UNSPECIFIED
+                                            - REGISTRY_ROLE_SERVICER
+                                            - REGISTRY_ROLE_SUBSERVICER
+                                            - REGISTRY_ROLE_CONTROLLER
+                                            - REGISTRY_ROLE_CUSTODIAN
+                                            - REGISTRY_ROLE_BORROWER
+                                            - REGISTRY_ROLE_ORIGINATOR
+                                            - REGISTRY_ROLE_LIEN_OWNER
+                                            - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                            - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                            - REGISTRY_ROLE_PLEDGEE
+                                          default: REGISTRY_ROLE_UNSPECIFIED
+                                        nft_role:
+                                          description: >-
+                                            nft_role is a role managed by another
+                                            module.
+                                          type: string
+                                          enum:
+                                            - NFT_ROLE_UNSPECIFIED
+                                            - NFT_ROLE_NFT_OWNER
+                                          default: NFT_ROLE_UNSPECIFIED
+                                      description: >-
+                                        RolePriorityEntry is a single entry in a
+                                        RolePriority list.
+                                    description: >-
+                                      entries is the ordered list of roles to
+                                      check. The first existing role is used.
+                              registry_class_role:
+                                description: >-
+                                  registry_class_role is a role defined by the
+                                  entry's registry class (e.g.
+
+                                  REGISTRY_CLASS_ROLE_MAINTAINER). Can only be
+                                  used with ASSIGNMENT_CURRENT* variants, and
+                                  only in
+
+                                  registry class role authorizations (not in the
+                                  module params defaults).
+                                type: string
+                                enum:
+                                  - REGISTRY_CLASS_ROLE_UNSPECIFIED
+                                  - REGISTRY_CLASS_ROLE_MAINTAINER
+                                default: REGISTRY_CLASS_ROLE_UNSPECIFIED
+                              assignment:
+                                description: >-
+                                  assignment specifies which address(es) to
+                                  resolve for the role.
+                                type: string
+                                enum:
+                                  - ASSIGNMENT_UNSPECIFIED
+                                  - ASSIGNMENT_CURRENT
+                                  - ASSIGNMENT_CURRENT_ALL
+                                  - ASSIGNMENT_CURRENT_ANY
+                                  - ASSIGNMENT_NEW
+                                  - ASSIGNMENT_NEW_ANY
+                                  - ASSIGNMENT_NEW_ALL
+                                default: ASSIGNMENT_UNSPECIFIED
+                            description: >-
+                              RoleAssignment specifies which role and which
+                              assignment type to resolve for a signature check.
+                          description: >-
+                            roles lists the role assignments that must be
+                            checked.
+                      description: >-
+                        SignatureRequirement defines a single signature check
+                        within an authorization path.
+                    description: >-
+                      signatures is the ordered list of signature requirements
+                      that must all be satisfied.
+                description: >-
+                  Authorization defines one complete approval path for a role
+                  update.
+
+                  All signature requirements in this authorization must be
+                  satisfied for this path to succeed.
+              description: >-
+                authorizations is a list of alternative approval paths.
+
+                The role update is approved if any single authorization is fully
+                satisfied.
+          description: >-
+            RoleAuthorization configures who must sign to update a specific
+            role.
+
+            Contains one or more Authorization paths; the update is approved if
+            ANY path is fully satisfied.
+        description: >-
+          role_authorizations are the default authorization policies that govern
+          role updates for
+
+          registry entries that are not associated with a registry class. They
+          form the middle tier of
+
+          the two-tier resolution: a registry class policy takes precedence,
+          then these module defaults,
+
+          and finally roles without any policy fall back to legacy NFT-owner
+          authorization.
+      pending_change_expiry:
+        type: string
+        description: >-
+          pending_change_expiry is how long a pending role change remains valid
+          after it is proposed.
+
+          Approvals received after the expiry are rejected and the change is
+          cleaned up.
+
+          Zero value (default) means pending changes never expire.
+    description: Params defines the registry module's parameters.
+  provenance.registry.v1.PendingRoleChange:
+    type: object
+    properties:
+      id:
+        type: string
+        description: |-
+          id is the deterministic identifier of this pending change
+          (a hash of key + the sorted set of role updates).
+      key:
+        description: key identifies the registry entry the change applies to.
+        type: object
+        properties:
+          nft_id:
+            type: string
+            description: >-
+              Identifier for the nft that this ledger is linked to.
+
+              This could be a `x/metadata` scope id or an `x/nft` nft id.
+
+              In order to create a ledger for an NFT, the NFT class must be
+              registered in the ledger module as a LedgerClass.
+          asset_class_id:
+            type: string
+            description: >-
+              asset_class_id is the Scope Specification ID or NFT Class ID.
+
+              This identifies the class or specification that the NFT belongs
+              to.
+
+              If it is a Scope Specification, the address is used,
+              e.g."scopespec1qnwg86nsatx5pl56muw0v9ytlz3qu3jx6m".
+
+              Otherwise, it is the NFT Class ID, e.g. "heloc-loan-class".
+      role_updates:
+        type: array
+        items:
+          type: object
+          properties:
+            role:
+              description: role is the role to update.
+              type: string
+              enum:
+                - REGISTRY_ROLE_UNSPECIFIED
+                - REGISTRY_ROLE_SERVICER
+                - REGISTRY_ROLE_SUBSERVICER
+                - REGISTRY_ROLE_CONTROLLER
+                - REGISTRY_ROLE_CUSTODIAN
+                - REGISTRY_ROLE_BORROWER
+                - REGISTRY_ROLE_ORIGINATOR
+                - REGISTRY_ROLE_LIEN_OWNER
+                - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                - REGISTRY_ROLE_PLEDGEE
+              default: REGISTRY_ROLE_UNSPECIFIED
+            addresses:
+              type: array
+              items:
+                type: string
+              description: |-
+                addresses is the desired set of addresses for this role.
+                An empty list means the role should be cleared entirely.
+          description: RoleUpdate specifies the desired set of addresses for a single role.
+        description: >-
+          role_updates is the desired state for each role the change will set
+          when applied. The same
+
+          desired-state, multi-role semantics as MsgSetRoles, collected through
+          accumulated approvals.
+      proposer:
+        type: string
+        description: proposer is the address that opened the pending change.
+      approvals:
+        type: array
+        items:
+          type: string
+        description: >-
+          approvals is the accumulated set of addresses that have approved this
+          change.
+      expires_at:
+        type: string
+        format: date-time
+        description: >-
+          expires_at is the block time after which this pending change is no
+          longer valid.
+
+          Zero value means no expiry.
+    description: >-
+      PendingRoleChange is a role change awaiting the approvals required by the
+      affected roles'
+
+      authorization policies. Each required party submits a single-signer
+      approval; once the
+
+      accumulated approvers satisfy every affected role's policy, the change is
+      applied atomically
+
+      and this record is removed.
   provenance.registry.v1.QueryGetRegistriesResponse:
     type: object
     properties:
@@ -97931,6 +99925,10 @@ definitions:
                       - REGISTRY_ROLE_CUSTODIAN
                       - REGISTRY_ROLE_BORROWER
                       - REGISTRY_ROLE_ORIGINATOR
+                      - REGISTRY_ROLE_LIEN_OWNER
+                      - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                      - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                      - REGISTRY_ROLE_PLEDGEE
                     default: REGISTRY_ROLE_UNSPECIFIED
                   addresses:
                     type: array
@@ -97954,6 +99952,20 @@ definitions:
 
                 Each role entry contains a role type and the addresses
                 authorized for that role.
+            registry_class_id:
+              type: string
+              description: >-
+                registry_class_id is the ID of the registry class governing this
+                entry's authorization rules.
+
+                If set, role updates for this entry use the authorization rules
+                defined in the referenced
+
+                registry class. If empty, role updates fall back to the module
+                params default policies, and
+
+                then to legacy NFT owner authorization for any role with no
+                policy.
           description: >-
             RegistryEntry represents a single entry in the registry, mapping a
             blockchain address to its roles.
@@ -98043,6 +100055,10 @@ definitions:
                     - REGISTRY_ROLE_CUSTODIAN
                     - REGISTRY_ROLE_BORROWER
                     - REGISTRY_ROLE_ORIGINATOR
+                    - REGISTRY_ROLE_LIEN_OWNER
+                    - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                    - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                    - REGISTRY_ROLE_PLEDGEE
                   default: REGISTRY_ROLE_UNSPECIFIED
                 addresses:
                   type: array
@@ -98065,6 +100081,20 @@ definitions:
 
               Each role entry contains a role type and the addresses authorized
               for that role.
+          registry_class_id:
+            type: string
+            description: >-
+              registry_class_id is the ID of the registry class governing this
+              entry's authorization rules.
+
+              If set, role updates for this entry use the authorization rules
+              defined in the referenced
+
+              registry class. If empty, role updates fall back to the module
+              params default policies, and
+
+              then to legacy NFT owner authorization for any role with no
+              policy.
     description: >-
       QueryGetRegistryResponse is the response type for the Query/GetRegistry
       RPC method.
@@ -98087,6 +100117,1320 @@ definitions:
 
       It provides a boolean result indicating whether the address has the
       specified role.
+  provenance.registry.v1.QueryParamsResponse:
+    type: object
+    properties:
+      params:
+        description: params are the current registry module parameters.
+        type: object
+        properties:
+          role_authorizations:
+            type: array
+            items:
+              type: object
+              properties:
+                role:
+                  description: >-
+                    role is the registry role whose assignments are being
+                    controlled.
+                  type: string
+                  enum:
+                    - REGISTRY_ROLE_UNSPECIFIED
+                    - REGISTRY_ROLE_SERVICER
+                    - REGISTRY_ROLE_SUBSERVICER
+                    - REGISTRY_ROLE_CONTROLLER
+                    - REGISTRY_ROLE_CUSTODIAN
+                    - REGISTRY_ROLE_BORROWER
+                    - REGISTRY_ROLE_ORIGINATOR
+                    - REGISTRY_ROLE_LIEN_OWNER
+                    - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                    - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                    - REGISTRY_ROLE_PLEDGEE
+                  default: REGISTRY_ROLE_UNSPECIFIED
+                authorizations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      description:
+                        type: string
+                        description: >-
+                          description is a human-readable explanation of this
+                          authorization path.
+                      signatures:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              description: >-
+                                type controls how the per-role results are
+                                combined (required_all, required_all_if_set,
+                                etc.).
+
+                                Each role is first evaluated on its own
+                                according to its assignment: an *_ANY assignment
+                                needs a
+
+                                signature from at least one of the role's
+                                addresses, and every other assignment needs
+                                signatures
+
+                                from all of them.
+                              type: string
+                              enum:
+                                - SIGNATURE_TYPE_UNSPECIFIED
+                                - SIGNATURE_TYPE_REQUIRED_ALL
+                                - SIGNATURE_TYPE_REQUIRED_ALL_IF_SET
+                                - SIGNATURE_TYPE_REQUIRED_ANY
+                                - SIGNATURE_TYPE_REQUIRED_ANY_IF_SET
+                              default: SIGNATURE_TYPE_UNSPECIFIED
+                            roles:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  registry_role:
+                                    description: >-
+                                      registry_role is a role managed within the
+                                      registry module state.
+
+                                      Can be used with any assignment type.
+                                    type: string
+                                    enum:
+                                      - REGISTRY_ROLE_UNSPECIFIED
+                                      - REGISTRY_ROLE_SERVICER
+                                      - REGISTRY_ROLE_SUBSERVICER
+                                      - REGISTRY_ROLE_CONTROLLER
+                                      - REGISTRY_ROLE_CUSTODIAN
+                                      - REGISTRY_ROLE_BORROWER
+                                      - REGISTRY_ROLE_ORIGINATOR
+                                      - REGISTRY_ROLE_LIEN_OWNER
+                                      - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                      - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                      - REGISTRY_ROLE_PLEDGEE
+                                    default: REGISTRY_ROLE_UNSPECIFIED
+                                  nft_role:
+                                    description: >-
+                                      nft_role is a role managed by another
+                                      module (e.g., NFT_ROLE_NFT_OWNER from
+                                      metadata).
+
+                                      Can only be used with ASSIGNMENT_CURRENT*
+                                      variants.
+                                    type: string
+                                    enum:
+                                      - NFT_ROLE_UNSPECIFIED
+                                      - NFT_ROLE_NFT_OWNER
+                                    default: NFT_ROLE_UNSPECIFIED
+                                  role_priority:
+                                    description: >-
+                                      role_priority is an ordered list of roles;
+                                      the first one that exists is used.
+                                    type: object
+                                    properties:
+                                      entries:
+                                        type: array
+                                        items:
+                                          type: object
+                                          properties:
+                                            registry_role:
+                                              description: >-
+                                                registry_role is a role managed within
+                                                the registry module state.
+                                              type: string
+                                              enum:
+                                                - REGISTRY_ROLE_UNSPECIFIED
+                                                - REGISTRY_ROLE_SERVICER
+                                                - REGISTRY_ROLE_SUBSERVICER
+                                                - REGISTRY_ROLE_CONTROLLER
+                                                - REGISTRY_ROLE_CUSTODIAN
+                                                - REGISTRY_ROLE_BORROWER
+                                                - REGISTRY_ROLE_ORIGINATOR
+                                                - REGISTRY_ROLE_LIEN_OWNER
+                                                - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                                - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                                - REGISTRY_ROLE_PLEDGEE
+                                              default: REGISTRY_ROLE_UNSPECIFIED
+                                            nft_role:
+                                              description: >-
+                                                nft_role is a role managed by another
+                                                module.
+                                              type: string
+                                              enum:
+                                                - NFT_ROLE_UNSPECIFIED
+                                                - NFT_ROLE_NFT_OWNER
+                                              default: NFT_ROLE_UNSPECIFIED
+                                          description: >-
+                                            RolePriorityEntry is a single entry in a
+                                            RolePriority list.
+                                        description: >-
+                                          entries is the ordered list of roles to
+                                          check. The first existing role is used.
+                                  registry_class_role:
+                                    description: >-
+                                      registry_class_role is a role defined by
+                                      the entry's registry class (e.g.
+
+                                      REGISTRY_CLASS_ROLE_MAINTAINER). Can only
+                                      be used with ASSIGNMENT_CURRENT* variants,
+                                      and only in
+
+                                      registry class role authorizations (not in
+                                      the module params defaults).
+                                    type: string
+                                    enum:
+                                      - REGISTRY_CLASS_ROLE_UNSPECIFIED
+                                      - REGISTRY_CLASS_ROLE_MAINTAINER
+                                    default: REGISTRY_CLASS_ROLE_UNSPECIFIED
+                                  assignment:
+                                    description: >-
+                                      assignment specifies which address(es) to
+                                      resolve for the role.
+                                    type: string
+                                    enum:
+                                      - ASSIGNMENT_UNSPECIFIED
+                                      - ASSIGNMENT_CURRENT
+                                      - ASSIGNMENT_CURRENT_ALL
+                                      - ASSIGNMENT_CURRENT_ANY
+                                      - ASSIGNMENT_NEW
+                                      - ASSIGNMENT_NEW_ANY
+                                      - ASSIGNMENT_NEW_ALL
+                                    default: ASSIGNMENT_UNSPECIFIED
+                                description: >-
+                                  RoleAssignment specifies which role and which
+                                  assignment type to resolve for a signature
+                                  check.
+                              description: >-
+                                roles lists the role assignments that must be
+                                checked.
+                          description: >-
+                            SignatureRequirement defines a single signature
+                            check within an authorization path.
+                        description: >-
+                          signatures is the ordered list of signature
+                          requirements that must all be satisfied.
+                    description: >-
+                      Authorization defines one complete approval path for a
+                      role update.
+
+                      All signature requirements in this authorization must be
+                      satisfied for this path to succeed.
+                  description: >-
+                    authorizations is a list of alternative approval paths.
+
+                    The role update is approved if any single authorization is
+                    fully satisfied.
+              description: >-
+                RoleAuthorization configures who must sign to update a specific
+                role.
+
+                Contains one or more Authorization paths; the update is approved
+                if ANY path is fully satisfied.
+            description: >-
+              role_authorizations are the default authorization policies that
+              govern role updates for
+
+              registry entries that are not associated with a registry class.
+              They form the middle tier of
+
+              the two-tier resolution: a registry class policy takes precedence,
+              then these module defaults,
+
+              and finally roles without any policy fall back to legacy NFT-owner
+              authorization.
+          pending_change_expiry:
+            type: string
+            description: >-
+              pending_change_expiry is how long a pending role change remains
+              valid after it is proposed.
+
+              Approvals received after the expiry are rejected and the change is
+              cleaned up.
+
+              Zero value (default) means pending changes never expire.
+    description: QueryParamsResponse is the response type for the Query/Params RPC method.
+  provenance.registry.v1.QueryPendingRoleChangeResponse:
+    type: object
+    properties:
+      pending_role_change:
+        description: pending_role_change is the pending role change for the requested id.
+        type: object
+        properties:
+          id:
+            type: string
+            description: |-
+              id is the deterministic identifier of this pending change
+              (a hash of key + the sorted set of role updates).
+          key:
+            description: key identifies the registry entry the change applies to.
+            type: object
+            properties:
+              nft_id:
+                type: string
+                description: >-
+                  Identifier for the nft that this ledger is linked to.
+
+                  This could be a `x/metadata` scope id or an `x/nft` nft id.
+
+                  In order to create a ledger for an NFT, the NFT class must be
+                  registered in the ledger module as a LedgerClass.
+              asset_class_id:
+                type: string
+                description: >-
+                  asset_class_id is the Scope Specification ID or NFT Class ID.
+
+                  This identifies the class or specification that the NFT
+                  belongs to.
+
+                  If it is a Scope Specification, the address is used,
+                  e.g."scopespec1qnwg86nsatx5pl56muw0v9ytlz3qu3jx6m".
+
+                  Otherwise, it is the NFT Class ID, e.g. "heloc-loan-class".
+          role_updates:
+            type: array
+            items:
+              type: object
+              properties:
+                role:
+                  description: role is the role to update.
+                  type: string
+                  enum:
+                    - REGISTRY_ROLE_UNSPECIFIED
+                    - REGISTRY_ROLE_SERVICER
+                    - REGISTRY_ROLE_SUBSERVICER
+                    - REGISTRY_ROLE_CONTROLLER
+                    - REGISTRY_ROLE_CUSTODIAN
+                    - REGISTRY_ROLE_BORROWER
+                    - REGISTRY_ROLE_ORIGINATOR
+                    - REGISTRY_ROLE_LIEN_OWNER
+                    - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                    - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                    - REGISTRY_ROLE_PLEDGEE
+                  default: REGISTRY_ROLE_UNSPECIFIED
+                addresses:
+                  type: array
+                  items:
+                    type: string
+                  description: |-
+                    addresses is the desired set of addresses for this role.
+                    An empty list means the role should be cleared entirely.
+              description: >-
+                RoleUpdate specifies the desired set of addresses for a single
+                role.
+            description: >-
+              role_updates is the desired state for each role the change will
+              set when applied. The same
+
+              desired-state, multi-role semantics as MsgSetRoles, collected
+              through accumulated approvals.
+          proposer:
+            type: string
+            description: proposer is the address that opened the pending change.
+          approvals:
+            type: array
+            items:
+              type: string
+            description: >-
+              approvals is the accumulated set of addresses that have approved
+              this change.
+          expires_at:
+            type: string
+            format: date-time
+            description: >-
+              expires_at is the block time after which this pending change is no
+              longer valid.
+
+              Zero value means no expiry.
+    description: >-
+      QueryPendingRoleChangeResponse is the response type for the
+      Query/PendingRoleChange RPC method.
+  provenance.registry.v1.QueryPendingRoleChangesResponse:
+    type: object
+    properties:
+      pending_role_changes:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+              description: |-
+                id is the deterministic identifier of this pending change
+                (a hash of key + the sorted set of role updates).
+            key:
+              description: key identifies the registry entry the change applies to.
+              type: object
+              properties:
+                nft_id:
+                  type: string
+                  description: >-
+                    Identifier for the nft that this ledger is linked to.
+
+                    This could be a `x/metadata` scope id or an `x/nft` nft id.
+
+                    In order to create a ledger for an NFT, the NFT class must
+                    be registered in the ledger module as a LedgerClass.
+                asset_class_id:
+                  type: string
+                  description: >-
+                    asset_class_id is the Scope Specification ID or NFT Class
+                    ID.
+
+                    This identifies the class or specification that the NFT
+                    belongs to.
+
+                    If it is a Scope Specification, the address is used,
+                    e.g."scopespec1qnwg86nsatx5pl56muw0v9ytlz3qu3jx6m".
+
+                    Otherwise, it is the NFT Class ID, e.g. "heloc-loan-class".
+            role_updates:
+              type: array
+              items:
+                type: object
+                properties:
+                  role:
+                    description: role is the role to update.
+                    type: string
+                    enum:
+                      - REGISTRY_ROLE_UNSPECIFIED
+                      - REGISTRY_ROLE_SERVICER
+                      - REGISTRY_ROLE_SUBSERVICER
+                      - REGISTRY_ROLE_CONTROLLER
+                      - REGISTRY_ROLE_CUSTODIAN
+                      - REGISTRY_ROLE_BORROWER
+                      - REGISTRY_ROLE_ORIGINATOR
+                      - REGISTRY_ROLE_LIEN_OWNER
+                      - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                      - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                      - REGISTRY_ROLE_PLEDGEE
+                    default: REGISTRY_ROLE_UNSPECIFIED
+                  addresses:
+                    type: array
+                    items:
+                      type: string
+                    description: |-
+                      addresses is the desired set of addresses for this role.
+                      An empty list means the role should be cleared entirely.
+                description: >-
+                  RoleUpdate specifies the desired set of addresses for a single
+                  role.
+              description: >-
+                role_updates is the desired state for each role the change will
+                set when applied. The same
+
+                desired-state, multi-role semantics as MsgSetRoles, collected
+                through accumulated approvals.
+            proposer:
+              type: string
+              description: proposer is the address that opened the pending change.
+            approvals:
+              type: array
+              items:
+                type: string
+              description: >-
+                approvals is the accumulated set of addresses that have approved
+                this change.
+            expires_at:
+              type: string
+              format: date-time
+              description: >-
+                expires_at is the block time after which this pending change is
+                no longer valid.
+
+                Zero value means no expiry.
+          description: >-
+            PendingRoleChange is a role change awaiting the approvals required
+            by the affected roles'
+
+            authorization policies. Each required party submits a single-signer
+            approval; once the
+
+            accumulated approvers satisfy every affected role's policy, the
+            change is applied atomically
+
+            and this record is removed.
+        description: pending_role_changes is the collection of pending role changes.
+      pagination:
+        description: pagination is the pagination details for this response.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    description: >-
+      QueryPendingRoleChangesResponse is the paginated response type for the
+      Query/PendingRoleChanges
+
+      RPC method.
+  provenance.registry.v1.QueryRegistryClassResponse:
+    type: object
+    properties:
+      registry_class:
+        description: >-
+          registry_class is the registry class for the requested id, including
+          its authorization policy.
+        type: object
+        properties:
+          registry_class_id:
+            type: string
+            description: >-
+              registry_class_id is the unique identifier for this registry class
+              (e.g. "loan-registry-v1").
+
+              It is required since NFT classes do not have an inherent owner,
+              and must be unique across
+
+              all registry classes.
+          asset_class_id:
+            type: string
+            description: >-
+              asset_class_id is the Scope Specification ID or NFT Class ID this
+              registry class governs.
+          maintainer:
+            type: string
+            description: >-
+              maintainer is the address authorized to manage this registry
+              class. It is permanent and
+
+              cannot be changed once set.
+          role_authorizations:
+            type: array
+            items:
+              type: object
+              properties:
+                role:
+                  description: >-
+                    role is the registry role whose assignments are being
+                    controlled.
+                  type: string
+                  enum:
+                    - REGISTRY_ROLE_UNSPECIFIED
+                    - REGISTRY_ROLE_SERVICER
+                    - REGISTRY_ROLE_SUBSERVICER
+                    - REGISTRY_ROLE_CONTROLLER
+                    - REGISTRY_ROLE_CUSTODIAN
+                    - REGISTRY_ROLE_BORROWER
+                    - REGISTRY_ROLE_ORIGINATOR
+                    - REGISTRY_ROLE_LIEN_OWNER
+                    - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                    - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                    - REGISTRY_ROLE_PLEDGEE
+                  default: REGISTRY_ROLE_UNSPECIFIED
+                authorizations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      description:
+                        type: string
+                        description: >-
+                          description is a human-readable explanation of this
+                          authorization path.
+                      signatures:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type:
+                              description: >-
+                                type controls how the per-role results are
+                                combined (required_all, required_all_if_set,
+                                etc.).
+
+                                Each role is first evaluated on its own
+                                according to its assignment: an *_ANY assignment
+                                needs a
+
+                                signature from at least one of the role's
+                                addresses, and every other assignment needs
+                                signatures
+
+                                from all of them.
+                              type: string
+                              enum:
+                                - SIGNATURE_TYPE_UNSPECIFIED
+                                - SIGNATURE_TYPE_REQUIRED_ALL
+                                - SIGNATURE_TYPE_REQUIRED_ALL_IF_SET
+                                - SIGNATURE_TYPE_REQUIRED_ANY
+                                - SIGNATURE_TYPE_REQUIRED_ANY_IF_SET
+                              default: SIGNATURE_TYPE_UNSPECIFIED
+                            roles:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  registry_role:
+                                    description: >-
+                                      registry_role is a role managed within the
+                                      registry module state.
+
+                                      Can be used with any assignment type.
+                                    type: string
+                                    enum:
+                                      - REGISTRY_ROLE_UNSPECIFIED
+                                      - REGISTRY_ROLE_SERVICER
+                                      - REGISTRY_ROLE_SUBSERVICER
+                                      - REGISTRY_ROLE_CONTROLLER
+                                      - REGISTRY_ROLE_CUSTODIAN
+                                      - REGISTRY_ROLE_BORROWER
+                                      - REGISTRY_ROLE_ORIGINATOR
+                                      - REGISTRY_ROLE_LIEN_OWNER
+                                      - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                      - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                      - REGISTRY_ROLE_PLEDGEE
+                                    default: REGISTRY_ROLE_UNSPECIFIED
+                                  nft_role:
+                                    description: >-
+                                      nft_role is a role managed by another
+                                      module (e.g., NFT_ROLE_NFT_OWNER from
+                                      metadata).
+
+                                      Can only be used with ASSIGNMENT_CURRENT*
+                                      variants.
+                                    type: string
+                                    enum:
+                                      - NFT_ROLE_UNSPECIFIED
+                                      - NFT_ROLE_NFT_OWNER
+                                    default: NFT_ROLE_UNSPECIFIED
+                                  role_priority:
+                                    description: >-
+                                      role_priority is an ordered list of roles;
+                                      the first one that exists is used.
+                                    type: object
+                                    properties:
+                                      entries:
+                                        type: array
+                                        items:
+                                          type: object
+                                          properties:
+                                            registry_role:
+                                              description: >-
+                                                registry_role is a role managed within
+                                                the registry module state.
+                                              type: string
+                                              enum:
+                                                - REGISTRY_ROLE_UNSPECIFIED
+                                                - REGISTRY_ROLE_SERVICER
+                                                - REGISTRY_ROLE_SUBSERVICER
+                                                - REGISTRY_ROLE_CONTROLLER
+                                                - REGISTRY_ROLE_CUSTODIAN
+                                                - REGISTRY_ROLE_BORROWER
+                                                - REGISTRY_ROLE_ORIGINATOR
+                                                - REGISTRY_ROLE_LIEN_OWNER
+                                                - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                                - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                                - REGISTRY_ROLE_PLEDGEE
+                                              default: REGISTRY_ROLE_UNSPECIFIED
+                                            nft_role:
+                                              description: >-
+                                                nft_role is a role managed by another
+                                                module.
+                                              type: string
+                                              enum:
+                                                - NFT_ROLE_UNSPECIFIED
+                                                - NFT_ROLE_NFT_OWNER
+                                              default: NFT_ROLE_UNSPECIFIED
+                                          description: >-
+                                            RolePriorityEntry is a single entry in a
+                                            RolePriority list.
+                                        description: >-
+                                          entries is the ordered list of roles to
+                                          check. The first existing role is used.
+                                  registry_class_role:
+                                    description: >-
+                                      registry_class_role is a role defined by
+                                      the entry's registry class (e.g.
+
+                                      REGISTRY_CLASS_ROLE_MAINTAINER). Can only
+                                      be used with ASSIGNMENT_CURRENT* variants,
+                                      and only in
+
+                                      registry class role authorizations (not in
+                                      the module params defaults).
+                                    type: string
+                                    enum:
+                                      - REGISTRY_CLASS_ROLE_UNSPECIFIED
+                                      - REGISTRY_CLASS_ROLE_MAINTAINER
+                                    default: REGISTRY_CLASS_ROLE_UNSPECIFIED
+                                  assignment:
+                                    description: >-
+                                      assignment specifies which address(es) to
+                                      resolve for the role.
+                                    type: string
+                                    enum:
+                                      - ASSIGNMENT_UNSPECIFIED
+                                      - ASSIGNMENT_CURRENT
+                                      - ASSIGNMENT_CURRENT_ALL
+                                      - ASSIGNMENT_CURRENT_ANY
+                                      - ASSIGNMENT_NEW
+                                      - ASSIGNMENT_NEW_ANY
+                                      - ASSIGNMENT_NEW_ALL
+                                    default: ASSIGNMENT_UNSPECIFIED
+                                description: >-
+                                  RoleAssignment specifies which role and which
+                                  assignment type to resolve for a signature
+                                  check.
+                              description: >-
+                                roles lists the role assignments that must be
+                                checked.
+                          description: >-
+                            SignatureRequirement defines a single signature
+                            check within an authorization path.
+                        description: >-
+                          signatures is the ordered list of signature
+                          requirements that must all be satisfied.
+                    description: >-
+                      Authorization defines one complete approval path for a
+                      role update.
+
+                      All signature requirements in this authorization must be
+                      satisfied for this path to succeed.
+                  description: >-
+                    authorizations is a list of alternative approval paths.
+
+                    The role update is approved if any single authorization is
+                    fully satisfied.
+              description: >-
+                RoleAuthorization configures who must sign to update a specific
+                role.
+
+                Contains one or more Authorization paths; the update is approved
+                if ANY path is fully satisfied.
+            description: >-
+              role_authorizations are the authorization rules for role updates
+              within this asset class.
+    description: >-
+      QueryRegistryClassResponse is the response type for the
+      Query/RegistryClass RPC method.
+  provenance.registry.v1.QueryRegistryClassesResponse:
+    type: object
+    properties:
+      registry_classes:
+        type: array
+        items:
+          type: object
+          properties:
+            registry_class_id:
+              type: string
+              description: >-
+                registry_class_id is the unique identifier for this registry
+                class (e.g. "loan-registry-v1").
+
+                It is required since NFT classes do not have an inherent owner,
+                and must be unique across
+
+                all registry classes.
+            asset_class_id:
+              type: string
+              description: >-
+                asset_class_id is the Scope Specification ID or NFT Class ID
+                this registry class governs.
+            maintainer:
+              type: string
+              description: >-
+                maintainer is the address authorized to manage this registry
+                class. It is permanent and
+
+                cannot be changed once set.
+            role_authorizations:
+              type: array
+              items:
+                type: object
+                properties:
+                  role:
+                    description: >-
+                      role is the registry role whose assignments are being
+                      controlled.
+                    type: string
+                    enum:
+                      - REGISTRY_ROLE_UNSPECIFIED
+                      - REGISTRY_ROLE_SERVICER
+                      - REGISTRY_ROLE_SUBSERVICER
+                      - REGISTRY_ROLE_CONTROLLER
+                      - REGISTRY_ROLE_CUSTODIAN
+                      - REGISTRY_ROLE_BORROWER
+                      - REGISTRY_ROLE_ORIGINATOR
+                      - REGISTRY_ROLE_LIEN_OWNER
+                      - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                      - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                      - REGISTRY_ROLE_PLEDGEE
+                    default: REGISTRY_ROLE_UNSPECIFIED
+                  authorizations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        description:
+                          type: string
+                          description: >-
+                            description is a human-readable explanation of this
+                            authorization path.
+                        signatures:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              type:
+                                description: >-
+                                  type controls how the per-role results are
+                                  combined (required_all, required_all_if_set,
+                                  etc.).
+
+                                  Each role is first evaluated on its own
+                                  according to its assignment: an *_ANY
+                                  assignment needs a
+
+                                  signature from at least one of the role's
+                                  addresses, and every other assignment needs
+                                  signatures
+
+                                  from all of them.
+                                type: string
+                                enum:
+                                  - SIGNATURE_TYPE_UNSPECIFIED
+                                  - SIGNATURE_TYPE_REQUIRED_ALL
+                                  - SIGNATURE_TYPE_REQUIRED_ALL_IF_SET
+                                  - SIGNATURE_TYPE_REQUIRED_ANY
+                                  - SIGNATURE_TYPE_REQUIRED_ANY_IF_SET
+                                default: SIGNATURE_TYPE_UNSPECIFIED
+                              roles:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    registry_role:
+                                      description: >-
+                                        registry_role is a role managed within
+                                        the registry module state.
+
+                                        Can be used with any assignment type.
+                                      type: string
+                                      enum:
+                                        - REGISTRY_ROLE_UNSPECIFIED
+                                        - REGISTRY_ROLE_SERVICER
+                                        - REGISTRY_ROLE_SUBSERVICER
+                                        - REGISTRY_ROLE_CONTROLLER
+                                        - REGISTRY_ROLE_CUSTODIAN
+                                        - REGISTRY_ROLE_BORROWER
+                                        - REGISTRY_ROLE_ORIGINATOR
+                                        - REGISTRY_ROLE_LIEN_OWNER
+                                        - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                        - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                        - REGISTRY_ROLE_PLEDGEE
+                                      default: REGISTRY_ROLE_UNSPECIFIED
+                                    nft_role:
+                                      description: >-
+                                        nft_role is a role managed by another
+                                        module (e.g., NFT_ROLE_NFT_OWNER from
+                                        metadata).
+
+                                        Can only be used with
+                                        ASSIGNMENT_CURRENT* variants.
+                                      type: string
+                                      enum:
+                                        - NFT_ROLE_UNSPECIFIED
+                                        - NFT_ROLE_NFT_OWNER
+                                      default: NFT_ROLE_UNSPECIFIED
+                                    role_priority:
+                                      description: >-
+                                        role_priority is an ordered list of
+                                        roles; the first one that exists is
+                                        used.
+                                      type: object
+                                      properties:
+                                        entries:
+                                          type: array
+                                          items:
+                                            type: object
+                                            properties:
+                                              registry_role:
+                                                description: >-
+                                                  registry_role is a role managed within
+                                                  the registry module state.
+                                                type: string
+                                                enum:
+                                                  - REGISTRY_ROLE_UNSPECIFIED
+                                                  - REGISTRY_ROLE_SERVICER
+                                                  - REGISTRY_ROLE_SUBSERVICER
+                                                  - REGISTRY_ROLE_CONTROLLER
+                                                  - REGISTRY_ROLE_CUSTODIAN
+                                                  - REGISTRY_ROLE_BORROWER
+                                                  - REGISTRY_ROLE_ORIGINATOR
+                                                  - REGISTRY_ROLE_LIEN_OWNER
+                                                  - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                                  - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                                  - REGISTRY_ROLE_PLEDGEE
+                                                default: REGISTRY_ROLE_UNSPECIFIED
+                                              nft_role:
+                                                description: >-
+                                                  nft_role is a role managed by another
+                                                  module.
+                                                type: string
+                                                enum:
+                                                  - NFT_ROLE_UNSPECIFIED
+                                                  - NFT_ROLE_NFT_OWNER
+                                                default: NFT_ROLE_UNSPECIFIED
+                                            description: >-
+                                              RolePriorityEntry is a single entry in a
+                                              RolePriority list.
+                                          description: >-
+                                            entries is the ordered list of roles to
+                                            check. The first existing role is used.
+                                    registry_class_role:
+                                      description: >-
+                                        registry_class_role is a role defined by
+                                        the entry's registry class (e.g.
+
+                                        REGISTRY_CLASS_ROLE_MAINTAINER). Can
+                                        only be used with ASSIGNMENT_CURRENT*
+                                        variants, and only in
+
+                                        registry class role authorizations (not
+                                        in the module params defaults).
+                                      type: string
+                                      enum:
+                                        - REGISTRY_CLASS_ROLE_UNSPECIFIED
+                                        - REGISTRY_CLASS_ROLE_MAINTAINER
+                                      default: REGISTRY_CLASS_ROLE_UNSPECIFIED
+                                    assignment:
+                                      description: >-
+                                        assignment specifies which address(es)
+                                        to resolve for the role.
+                                      type: string
+                                      enum:
+                                        - ASSIGNMENT_UNSPECIFIED
+                                        - ASSIGNMENT_CURRENT
+                                        - ASSIGNMENT_CURRENT_ALL
+                                        - ASSIGNMENT_CURRENT_ANY
+                                        - ASSIGNMENT_NEW
+                                        - ASSIGNMENT_NEW_ANY
+                                        - ASSIGNMENT_NEW_ALL
+                                      default: ASSIGNMENT_UNSPECIFIED
+                                  description: >-
+                                    RoleAssignment specifies which role and
+                                    which assignment type to resolve for a
+                                    signature check.
+                                description: >-
+                                  roles lists the role assignments that must be
+                                  checked.
+                            description: >-
+                              SignatureRequirement defines a single signature
+                              check within an authorization path.
+                          description: >-
+                            signatures is the ordered list of signature
+                            requirements that must all be satisfied.
+                      description: >-
+                        Authorization defines one complete approval path for a
+                        role update.
+
+                        All signature requirements in this authorization must be
+                        satisfied for this path to succeed.
+                    description: >-
+                      authorizations is a list of alternative approval paths.
+
+                      The role update is approved if any single authorization is
+                      fully satisfied.
+                description: >-
+                  RoleAuthorization configures who must sign to update a
+                  specific role.
+
+                  Contains one or more Authorization paths; the update is
+                  approved if ANY path is fully satisfied.
+              description: >-
+                role_authorizations are the authorization rules for role updates
+                within this asset class.
+          description: >-
+            RegistryClass provides asset class-level authorization over role
+            updates.
+
+            It defines authorization rules for an entire NFT collection (asset
+            class), allowing the
+
+            maintainer to establish custom role update policies without
+            requiring governance proposals.
+        description: registry_classes is the collection of registry classes.
+      pagination:
+        description: pagination is the pagination details for this response.
+        type: object
+        properties:
+          next_key:
+            type: string
+            format: byte
+            description: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently. It will be empty if
+              there are no more results.
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+    description: >-
+      QueryRegistryClassesResponse is the paginated response type for the
+      Query/RegistryClasses RPC method.
+  provenance.registry.v1.QueryValidateRoleChangeRequest:
+    type: object
+    properties:
+      key:
+        description: key identifies the registry entry the role change targets.
+        type: object
+        properties:
+          nft_id:
+            type: string
+            description: >-
+              Identifier for the nft that this ledger is linked to.
+
+              This could be a `x/metadata` scope id or an `x/nft` nft id.
+
+              In order to create a ledger for an NFT, the NFT class must be
+              registered in the ledger module as a LedgerClass.
+          asset_class_id:
+            type: string
+            description: >-
+              asset_class_id is the Scope Specification ID or NFT Class ID.
+
+              This identifies the class or specification that the NFT belongs
+              to.
+
+              If it is a Scope Specification, the address is used,
+              e.g."scopespec1qnwg86nsatx5pl56muw0v9ytlz3qu3jx6m".
+
+              Otherwise, it is the NFT Class ID, e.g. "heloc-loan-class".
+      role_updates:
+        type: array
+        items:
+          type: object
+          properties:
+            role:
+              description: role is the role to update.
+              type: string
+              enum:
+                - REGISTRY_ROLE_UNSPECIFIED
+                - REGISTRY_ROLE_SERVICER
+                - REGISTRY_ROLE_SUBSERVICER
+                - REGISTRY_ROLE_CONTROLLER
+                - REGISTRY_ROLE_CUSTODIAN
+                - REGISTRY_ROLE_BORROWER
+                - REGISTRY_ROLE_ORIGINATOR
+                - REGISTRY_ROLE_LIEN_OWNER
+                - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                - REGISTRY_ROLE_PLEDGEE
+              default: REGISTRY_ROLE_UNSPECIFIED
+            addresses:
+              type: array
+              items:
+                type: string
+              description: |-
+                addresses is the desired set of addresses for this role.
+                An empty list means the role should be cleared entirely.
+          description: RoleUpdate specifies the desired set of addresses for a single role.
+        description: >-
+          role_updates is the desired-state batch to evaluate (same shape as
+          MsgSetRoles).
+      approvers:
+        type: array
+        items:
+          type: string
+        description: >-
+          approvers is the accumulated/candidate set of approver addresses to
+          test.
+    description: >-
+      QueryValidateRoleChangeRequest is the request type for the
+      Query/ValidateRoleChange RPC method.
+
+      It describes a candidate role-change batch and the set of approvers to
+      test against each affected
+
+      role's authorization policy.
+  provenance.registry.v1.QueryValidateRoleChangeResponse:
+    type: object
+    properties:
+      error:
+        type: string
+        description: >-
+          error contains the authorization failure explanation. It is empty when
+          the change is authorized.
+      authorized:
+        type: boolean
+        description: >-
+          authorized is true if the supplied approvers satisfy every affected
+          role's policy.
+    description: >-
+      QueryValidateRoleChangeResponse is the response type for the
+      Query/ValidateRoleChange RPC method.
+  provenance.registry.v1.RegistryClass:
+    type: object
+    properties:
+      registry_class_id:
+        type: string
+        description: >-
+          registry_class_id is the unique identifier for this registry class
+          (e.g. "loan-registry-v1").
+
+          It is required since NFT classes do not have an inherent owner, and
+          must be unique across
+
+          all registry classes.
+      asset_class_id:
+        type: string
+        description: >-
+          asset_class_id is the Scope Specification ID or NFT Class ID this
+          registry class governs.
+      maintainer:
+        type: string
+        description: >-
+          maintainer is the address authorized to manage this registry class. It
+          is permanent and
+
+          cannot be changed once set.
+      role_authorizations:
+        type: array
+        items:
+          type: object
+          properties:
+            role:
+              description: >-
+                role is the registry role whose assignments are being
+                controlled.
+              type: string
+              enum:
+                - REGISTRY_ROLE_UNSPECIFIED
+                - REGISTRY_ROLE_SERVICER
+                - REGISTRY_ROLE_SUBSERVICER
+                - REGISTRY_ROLE_CONTROLLER
+                - REGISTRY_ROLE_CUSTODIAN
+                - REGISTRY_ROLE_BORROWER
+                - REGISTRY_ROLE_ORIGINATOR
+                - REGISTRY_ROLE_LIEN_OWNER
+                - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                - REGISTRY_ROLE_PLEDGEE
+              default: REGISTRY_ROLE_UNSPECIFIED
+            authorizations:
+              type: array
+              items:
+                type: object
+                properties:
+                  description:
+                    type: string
+                    description: >-
+                      description is a human-readable explanation of this
+                      authorization path.
+                  signatures:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          description: >-
+                            type controls how the per-role results are combined
+                            (required_all, required_all_if_set, etc.).
+
+                            Each role is first evaluated on its own according to
+                            its assignment: an *_ANY assignment needs a
+
+                            signature from at least one of the role's addresses,
+                            and every other assignment needs signatures
+
+                            from all of them.
+                          type: string
+                          enum:
+                            - SIGNATURE_TYPE_UNSPECIFIED
+                            - SIGNATURE_TYPE_REQUIRED_ALL
+                            - SIGNATURE_TYPE_REQUIRED_ALL_IF_SET
+                            - SIGNATURE_TYPE_REQUIRED_ANY
+                            - SIGNATURE_TYPE_REQUIRED_ANY_IF_SET
+                          default: SIGNATURE_TYPE_UNSPECIFIED
+                        roles:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              registry_role:
+                                description: >-
+                                  registry_role is a role managed within the
+                                  registry module state.
+
+                                  Can be used with any assignment type.
+                                type: string
+                                enum:
+                                  - REGISTRY_ROLE_UNSPECIFIED
+                                  - REGISTRY_ROLE_SERVICER
+                                  - REGISTRY_ROLE_SUBSERVICER
+                                  - REGISTRY_ROLE_CONTROLLER
+                                  - REGISTRY_ROLE_CUSTODIAN
+                                  - REGISTRY_ROLE_BORROWER
+                                  - REGISTRY_ROLE_ORIGINATOR
+                                  - REGISTRY_ROLE_LIEN_OWNER
+                                  - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                  - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                  - REGISTRY_ROLE_PLEDGEE
+                                default: REGISTRY_ROLE_UNSPECIFIED
+                              nft_role:
+                                description: >-
+                                  nft_role is a role managed by another module
+                                  (e.g., NFT_ROLE_NFT_OWNER from metadata).
+
+                                  Can only be used with ASSIGNMENT_CURRENT*
+                                  variants.
+                                type: string
+                                enum:
+                                  - NFT_ROLE_UNSPECIFIED
+                                  - NFT_ROLE_NFT_OWNER
+                                default: NFT_ROLE_UNSPECIFIED
+                              role_priority:
+                                description: >-
+                                  role_priority is an ordered list of roles; the
+                                  first one that exists is used.
+                                type: object
+                                properties:
+                                  entries:
+                                    type: array
+                                    items:
+                                      type: object
+                                      properties:
+                                        registry_role:
+                                          description: >-
+                                            registry_role is a role managed within
+                                            the registry module state.
+                                          type: string
+                                          enum:
+                                            - REGISTRY_ROLE_UNSPECIFIED
+                                            - REGISTRY_ROLE_SERVICER
+                                            - REGISTRY_ROLE_SUBSERVICER
+                                            - REGISTRY_ROLE_CONTROLLER
+                                            - REGISTRY_ROLE_CUSTODIAN
+                                            - REGISTRY_ROLE_BORROWER
+                                            - REGISTRY_ROLE_ORIGINATOR
+                                            - REGISTRY_ROLE_LIEN_OWNER
+                                            - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                            - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                            - REGISTRY_ROLE_PLEDGEE
+                                          default: REGISTRY_ROLE_UNSPECIFIED
+                                        nft_role:
+                                          description: >-
+                                            nft_role is a role managed by another
+                                            module.
+                                          type: string
+                                          enum:
+                                            - NFT_ROLE_UNSPECIFIED
+                                            - NFT_ROLE_NFT_OWNER
+                                          default: NFT_ROLE_UNSPECIFIED
+                                      description: >-
+                                        RolePriorityEntry is a single entry in a
+                                        RolePriority list.
+                                    description: >-
+                                      entries is the ordered list of roles to
+                                      check. The first existing role is used.
+                              registry_class_role:
+                                description: >-
+                                  registry_class_role is a role defined by the
+                                  entry's registry class (e.g.
+
+                                  REGISTRY_CLASS_ROLE_MAINTAINER). Can only be
+                                  used with ASSIGNMENT_CURRENT* variants, and
+                                  only in
+
+                                  registry class role authorizations (not in the
+                                  module params defaults).
+                                type: string
+                                enum:
+                                  - REGISTRY_CLASS_ROLE_UNSPECIFIED
+                                  - REGISTRY_CLASS_ROLE_MAINTAINER
+                                default: REGISTRY_CLASS_ROLE_UNSPECIFIED
+                              assignment:
+                                description: >-
+                                  assignment specifies which address(es) to
+                                  resolve for the role.
+                                type: string
+                                enum:
+                                  - ASSIGNMENT_UNSPECIFIED
+                                  - ASSIGNMENT_CURRENT
+                                  - ASSIGNMENT_CURRENT_ALL
+                                  - ASSIGNMENT_CURRENT_ANY
+                                  - ASSIGNMENT_NEW
+                                  - ASSIGNMENT_NEW_ANY
+                                  - ASSIGNMENT_NEW_ALL
+                                default: ASSIGNMENT_UNSPECIFIED
+                            description: >-
+                              RoleAssignment specifies which role and which
+                              assignment type to resolve for a signature check.
+                          description: >-
+                            roles lists the role assignments that must be
+                            checked.
+                      description: >-
+                        SignatureRequirement defines a single signature check
+                        within an authorization path.
+                    description: >-
+                      signatures is the ordered list of signature requirements
+                      that must all be satisfied.
+                description: >-
+                  Authorization defines one complete approval path for a role
+                  update.
+
+                  All signature requirements in this authorization must be
+                  satisfied for this path to succeed.
+              description: >-
+                authorizations is a list of alternative approval paths.
+
+                The role update is approved if any single authorization is fully
+                satisfied.
+          description: >-
+            RoleAuthorization configures who must sign to update a specific
+            role.
+
+            Contains one or more Authorization paths; the update is approved if
+            ANY path is fully satisfied.
+        description: >-
+          role_authorizations are the authorization rules for role updates
+          within this asset class.
+    description: >-
+      RegistryClass provides asset class-level authorization over role updates.
+
+      It defines authorization rules for an entire NFT collection (asset class),
+      allowing the
+
+      maintainer to establish custom role update policies without requiring
+      governance proposals.
+  provenance.registry.v1.RegistryClassRole:
+    type: string
+    enum:
+      - REGISTRY_CLASS_ROLE_UNSPECIFIED
+      - REGISTRY_CLASS_ROLE_MAINTAINER
+    default: REGISTRY_CLASS_ROLE_UNSPECIFIED
+    description: >-
+      RegistryClassRole identifies roles defined by the registry class
+      associated with a registry entry.
+
+      These roles are read-only from the perspective of role updates: they are
+      resolved from the entry's
+
+      registry class at authorization time, are never stored in the entry's
+      roles, and cannot be granted,
+
+      revoked, or transferred through role-update messages.
+
+       - REGISTRY_CLASS_ROLE_UNSPECIFIED: REGISTRY_CLASS_ROLE_UNSPECIFIED is the default/unset value.
+       - REGISTRY_CLASS_ROLE_MAINTAINER: REGISTRY_CLASS_ROLE_MAINTAINER is the maintainer of the registry class associated with the entry.
+      Resolution fails closed if the entry has no registry class or the class
+      cannot be resolved.
   provenance.registry.v1.RegistryEntry:
     type: object
     properties:
@@ -98133,6 +101477,10 @@ definitions:
                 - REGISTRY_ROLE_CUSTODIAN
                 - REGISTRY_ROLE_BORROWER
                 - REGISTRY_ROLE_ORIGINATOR
+                - REGISTRY_ROLE_LIEN_OWNER
+                - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                - REGISTRY_ROLE_PLEDGEE
               default: REGISTRY_ROLE_UNSPECIFIED
             addresses:
               type: array
@@ -98155,6 +101503,19 @@ definitions:
 
           Each role entry contains a role type and the addresses authorized for
           that role.
+      registry_class_id:
+        type: string
+        description: >-
+          registry_class_id is the ID of the registry class governing this
+          entry's authorization rules.
+
+          If set, role updates for this entry use the authorization rules
+          defined in the referenced
+
+          registry class. If empty, role updates fall back to the module params
+          default policies, and
+
+          then to legacy NFT owner authorization for any role with no policy.
     description: >-
       RegistryEntry represents a single entry in the registry, mapping a
       blockchain address to its roles.
@@ -98199,6 +101560,10 @@ definitions:
       - REGISTRY_ROLE_CUSTODIAN
       - REGISTRY_ROLE_BORROWER
       - REGISTRY_ROLE_ORIGINATOR
+      - REGISTRY_ROLE_LIEN_OWNER
+      - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+      - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+      - REGISTRY_ROLE_PLEDGEE
     default: REGISTRY_ROLE_UNSPECIFIED
     description: >-
       RegistryRole defines the different types of roles that can be assigned to
@@ -98228,6 +101593,401 @@ definitions:
        - REGISTRY_ROLE_ORIGINATOR: REGISTRY_ROLE_ORIGINATOR indicates the address has originator privileges.
       Originators are responsible for creating and originating the underlying
       assets.
+       - REGISTRY_ROLE_LIEN_OWNER: REGISTRY_ROLE_LIEN_OWNER indicates the entity on whose behalf the registry acts as a nominal lien holder.
+       - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN: REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN indicates an organization with a security interest in the lien.
+      This party can foreclose into the Lien Owner role or direct a transfer in
+      case of default.
+       - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE: REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE indicates an organization with a financial interest in the eNote.
+      This party can foreclose into the Controller role or direct a transfer in
+      case of default.
+       - REGISTRY_ROLE_PLEDGEE: REGISTRY_ROLE_PLEDGEE indicates a lender or creditor that holds a security interest in pledged loans
+      as collateral securing an obligation of the Pledgor.
+  provenance.registry.v1.RoleAssignment:
+    type: object
+    properties:
+      registry_role:
+        description: |-
+          registry_role is a role managed within the registry module state.
+          Can be used with any assignment type.
+        type: string
+        enum:
+          - REGISTRY_ROLE_UNSPECIFIED
+          - REGISTRY_ROLE_SERVICER
+          - REGISTRY_ROLE_SUBSERVICER
+          - REGISTRY_ROLE_CONTROLLER
+          - REGISTRY_ROLE_CUSTODIAN
+          - REGISTRY_ROLE_BORROWER
+          - REGISTRY_ROLE_ORIGINATOR
+          - REGISTRY_ROLE_LIEN_OWNER
+          - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+          - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+          - REGISTRY_ROLE_PLEDGEE
+        default: REGISTRY_ROLE_UNSPECIFIED
+      nft_role:
+        description: >-
+          nft_role is a role managed by another module (e.g., NFT_ROLE_NFT_OWNER
+          from metadata).
+
+          Can only be used with ASSIGNMENT_CURRENT* variants.
+        type: string
+        enum:
+          - NFT_ROLE_UNSPECIFIED
+          - NFT_ROLE_NFT_OWNER
+        default: NFT_ROLE_UNSPECIFIED
+      role_priority:
+        description: >-
+          role_priority is an ordered list of roles; the first one that exists
+          is used.
+        type: object
+        properties:
+          entries:
+            type: array
+            items:
+              type: object
+              properties:
+                registry_role:
+                  description: >-
+                    registry_role is a role managed within the registry module
+                    state.
+                  type: string
+                  enum:
+                    - REGISTRY_ROLE_UNSPECIFIED
+                    - REGISTRY_ROLE_SERVICER
+                    - REGISTRY_ROLE_SUBSERVICER
+                    - REGISTRY_ROLE_CONTROLLER
+                    - REGISTRY_ROLE_CUSTODIAN
+                    - REGISTRY_ROLE_BORROWER
+                    - REGISTRY_ROLE_ORIGINATOR
+                    - REGISTRY_ROLE_LIEN_OWNER
+                    - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                    - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                    - REGISTRY_ROLE_PLEDGEE
+                  default: REGISTRY_ROLE_UNSPECIFIED
+                nft_role:
+                  description: nft_role is a role managed by another module.
+                  type: string
+                  enum:
+                    - NFT_ROLE_UNSPECIFIED
+                    - NFT_ROLE_NFT_OWNER
+                  default: NFT_ROLE_UNSPECIFIED
+              description: RolePriorityEntry is a single entry in a RolePriority list.
+            description: >-
+              entries is the ordered list of roles to check. The first existing
+              role is used.
+      registry_class_role:
+        description: >-
+          registry_class_role is a role defined by the entry's registry class
+          (e.g.
+
+          REGISTRY_CLASS_ROLE_MAINTAINER). Can only be used with
+          ASSIGNMENT_CURRENT* variants, and only in
+
+          registry class role authorizations (not in the module params
+          defaults).
+        type: string
+        enum:
+          - REGISTRY_CLASS_ROLE_UNSPECIFIED
+          - REGISTRY_CLASS_ROLE_MAINTAINER
+        default: REGISTRY_CLASS_ROLE_UNSPECIFIED
+      assignment:
+        description: assignment specifies which address(es) to resolve for the role.
+        type: string
+        enum:
+          - ASSIGNMENT_UNSPECIFIED
+          - ASSIGNMENT_CURRENT
+          - ASSIGNMENT_CURRENT_ALL
+          - ASSIGNMENT_CURRENT_ANY
+          - ASSIGNMENT_NEW
+          - ASSIGNMENT_NEW_ANY
+          - ASSIGNMENT_NEW_ALL
+        default: ASSIGNMENT_UNSPECIFIED
+    description: >-
+      RoleAssignment specifies which role and which assignment type to resolve
+      for a signature check.
+  provenance.registry.v1.RoleAuthorization:
+    type: object
+    properties:
+      role:
+        description: role is the registry role whose assignments are being controlled.
+        type: string
+        enum:
+          - REGISTRY_ROLE_UNSPECIFIED
+          - REGISTRY_ROLE_SERVICER
+          - REGISTRY_ROLE_SUBSERVICER
+          - REGISTRY_ROLE_CONTROLLER
+          - REGISTRY_ROLE_CUSTODIAN
+          - REGISTRY_ROLE_BORROWER
+          - REGISTRY_ROLE_ORIGINATOR
+          - REGISTRY_ROLE_LIEN_OWNER
+          - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+          - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+          - REGISTRY_ROLE_PLEDGEE
+        default: REGISTRY_ROLE_UNSPECIFIED
+      authorizations:
+        type: array
+        items:
+          type: object
+          properties:
+            description:
+              type: string
+              description: >-
+                description is a human-readable explanation of this
+                authorization path.
+            signatures:
+              type: array
+              items:
+                type: object
+                properties:
+                  type:
+                    description: >-
+                      type controls how the per-role results are combined
+                      (required_all, required_all_if_set, etc.).
+
+                      Each role is first evaluated on its own according to its
+                      assignment: an *_ANY assignment needs a
+
+                      signature from at least one of the role's addresses, and
+                      every other assignment needs signatures
+
+                      from all of them.
+                    type: string
+                    enum:
+                      - SIGNATURE_TYPE_UNSPECIFIED
+                      - SIGNATURE_TYPE_REQUIRED_ALL
+                      - SIGNATURE_TYPE_REQUIRED_ALL_IF_SET
+                      - SIGNATURE_TYPE_REQUIRED_ANY
+                      - SIGNATURE_TYPE_REQUIRED_ANY_IF_SET
+                    default: SIGNATURE_TYPE_UNSPECIFIED
+                  roles:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        registry_role:
+                          description: >-
+                            registry_role is a role managed within the registry
+                            module state.
+
+                            Can be used with any assignment type.
+                          type: string
+                          enum:
+                            - REGISTRY_ROLE_UNSPECIFIED
+                            - REGISTRY_ROLE_SERVICER
+                            - REGISTRY_ROLE_SUBSERVICER
+                            - REGISTRY_ROLE_CONTROLLER
+                            - REGISTRY_ROLE_CUSTODIAN
+                            - REGISTRY_ROLE_BORROWER
+                            - REGISTRY_ROLE_ORIGINATOR
+                            - REGISTRY_ROLE_LIEN_OWNER
+                            - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                            - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                            - REGISTRY_ROLE_PLEDGEE
+                          default: REGISTRY_ROLE_UNSPECIFIED
+                        nft_role:
+                          description: >-
+                            nft_role is a role managed by another module (e.g.,
+                            NFT_ROLE_NFT_OWNER from metadata).
+
+                            Can only be used with ASSIGNMENT_CURRENT* variants.
+                          type: string
+                          enum:
+                            - NFT_ROLE_UNSPECIFIED
+                            - NFT_ROLE_NFT_OWNER
+                          default: NFT_ROLE_UNSPECIFIED
+                        role_priority:
+                          description: >-
+                            role_priority is an ordered list of roles; the first
+                            one that exists is used.
+                          type: object
+                          properties:
+                            entries:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  registry_role:
+                                    description: >-
+                                      registry_role is a role managed within the
+                                      registry module state.
+                                    type: string
+                                    enum:
+                                      - REGISTRY_ROLE_UNSPECIFIED
+                                      - REGISTRY_ROLE_SERVICER
+                                      - REGISTRY_ROLE_SUBSERVICER
+                                      - REGISTRY_ROLE_CONTROLLER
+                                      - REGISTRY_ROLE_CUSTODIAN
+                                      - REGISTRY_ROLE_BORROWER
+                                      - REGISTRY_ROLE_ORIGINATOR
+                                      - REGISTRY_ROLE_LIEN_OWNER
+                                      - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                                      - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                                      - REGISTRY_ROLE_PLEDGEE
+                                    default: REGISTRY_ROLE_UNSPECIFIED
+                                  nft_role:
+                                    description: >-
+                                      nft_role is a role managed by another
+                                      module.
+                                    type: string
+                                    enum:
+                                      - NFT_ROLE_UNSPECIFIED
+                                      - NFT_ROLE_NFT_OWNER
+                                    default: NFT_ROLE_UNSPECIFIED
+                                description: >-
+                                  RolePriorityEntry is a single entry in a
+                                  RolePriority list.
+                              description: >-
+                                entries is the ordered list of roles to check.
+                                The first existing role is used.
+                        registry_class_role:
+                          description: >-
+                            registry_class_role is a role defined by the entry's
+                            registry class (e.g.
+
+                            REGISTRY_CLASS_ROLE_MAINTAINER). Can only be used
+                            with ASSIGNMENT_CURRENT* variants, and only in
+
+                            registry class role authorizations (not in the
+                            module params defaults).
+                          type: string
+                          enum:
+                            - REGISTRY_CLASS_ROLE_UNSPECIFIED
+                            - REGISTRY_CLASS_ROLE_MAINTAINER
+                          default: REGISTRY_CLASS_ROLE_UNSPECIFIED
+                        assignment:
+                          description: >-
+                            assignment specifies which address(es) to resolve
+                            for the role.
+                          type: string
+                          enum:
+                            - ASSIGNMENT_UNSPECIFIED
+                            - ASSIGNMENT_CURRENT
+                            - ASSIGNMENT_CURRENT_ALL
+                            - ASSIGNMENT_CURRENT_ANY
+                            - ASSIGNMENT_NEW
+                            - ASSIGNMENT_NEW_ANY
+                            - ASSIGNMENT_NEW_ALL
+                          default: ASSIGNMENT_UNSPECIFIED
+                      description: >-
+                        RoleAssignment specifies which role and which assignment
+                        type to resolve for a signature check.
+                    description: roles lists the role assignments that must be checked.
+                description: >-
+                  SignatureRequirement defines a single signature check within
+                  an authorization path.
+              description: >-
+                signatures is the ordered list of signature requirements that
+                must all be satisfied.
+          description: >-
+            Authorization defines one complete approval path for a role update.
+
+            All signature requirements in this authorization must be satisfied
+            for this path to succeed.
+        description: >-
+          authorizations is a list of alternative approval paths.
+
+          The role update is approved if any single authorization is fully
+          satisfied.
+    description: >-
+      RoleAuthorization configures who must sign to update a specific role.
+
+      Contains one or more Authorization paths; the update is approved if ANY
+      path is fully satisfied.
+  provenance.registry.v1.RolePriority:
+    type: object
+    properties:
+      entries:
+        type: array
+        items:
+          type: object
+          properties:
+            registry_role:
+              description: >-
+                registry_role is a role managed within the registry module
+                state.
+              type: string
+              enum:
+                - REGISTRY_ROLE_UNSPECIFIED
+                - REGISTRY_ROLE_SERVICER
+                - REGISTRY_ROLE_SUBSERVICER
+                - REGISTRY_ROLE_CONTROLLER
+                - REGISTRY_ROLE_CUSTODIAN
+                - REGISTRY_ROLE_BORROWER
+                - REGISTRY_ROLE_ORIGINATOR
+                - REGISTRY_ROLE_LIEN_OWNER
+                - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                - REGISTRY_ROLE_PLEDGEE
+              default: REGISTRY_ROLE_UNSPECIFIED
+            nft_role:
+              description: nft_role is a role managed by another module.
+              type: string
+              enum:
+                - NFT_ROLE_UNSPECIFIED
+                - NFT_ROLE_NFT_OWNER
+              default: NFT_ROLE_UNSPECIFIED
+          description: RolePriorityEntry is a single entry in a RolePriority list.
+        description: >-
+          entries is the ordered list of roles to check. The first existing role
+          is used.
+    description: >-
+      RolePriority is an ordered list of role entries used for
+      fallback/hierarchical authority.
+
+      The keeper uses the first role in the list that exists.
+  provenance.registry.v1.RolePriorityEntry:
+    type: object
+    properties:
+      registry_role:
+        description: registry_role is a role managed within the registry module state.
+        type: string
+        enum:
+          - REGISTRY_ROLE_UNSPECIFIED
+          - REGISTRY_ROLE_SERVICER
+          - REGISTRY_ROLE_SUBSERVICER
+          - REGISTRY_ROLE_CONTROLLER
+          - REGISTRY_ROLE_CUSTODIAN
+          - REGISTRY_ROLE_BORROWER
+          - REGISTRY_ROLE_ORIGINATOR
+          - REGISTRY_ROLE_LIEN_OWNER
+          - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+          - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+          - REGISTRY_ROLE_PLEDGEE
+        default: REGISTRY_ROLE_UNSPECIFIED
+      nft_role:
+        description: nft_role is a role managed by another module.
+        type: string
+        enum:
+          - NFT_ROLE_UNSPECIFIED
+          - NFT_ROLE_NFT_OWNER
+        default: NFT_ROLE_UNSPECIFIED
+    description: RolePriorityEntry is a single entry in a RolePriority list.
+  provenance.registry.v1.RoleUpdate:
+    type: object
+    properties:
+      role:
+        description: role is the role to update.
+        type: string
+        enum:
+          - REGISTRY_ROLE_UNSPECIFIED
+          - REGISTRY_ROLE_SERVICER
+          - REGISTRY_ROLE_SUBSERVICER
+          - REGISTRY_ROLE_CONTROLLER
+          - REGISTRY_ROLE_CUSTODIAN
+          - REGISTRY_ROLE_BORROWER
+          - REGISTRY_ROLE_ORIGINATOR
+          - REGISTRY_ROLE_LIEN_OWNER
+          - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+          - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+          - REGISTRY_ROLE_PLEDGEE
+        default: REGISTRY_ROLE_UNSPECIFIED
+      addresses:
+        type: array
+        items:
+          type: string
+        description: |-
+          addresses is the desired set of addresses for this role.
+          An empty list means the role should be cleared entirely.
+    description: RoleUpdate specifies the desired set of addresses for a single role.
   provenance.registry.v1.RolesEntry:
     type: object
     properties:
@@ -98242,6 +102002,10 @@ definitions:
           - REGISTRY_ROLE_CUSTODIAN
           - REGISTRY_ROLE_BORROWER
           - REGISTRY_ROLE_ORIGINATOR
+          - REGISTRY_ROLE_LIEN_OWNER
+          - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+          - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+          - REGISTRY_ROLE_PLEDGEE
         default: REGISTRY_ROLE_UNSPECIFIED
       addresses:
         type: array
@@ -98259,11 +102023,214 @@ definitions:
 
       This allows multiple addresses to be assigned the same role for a given
       registry entry.
+  provenance.registry.v1.SignatureRequirement:
+    type: object
+    properties:
+      type:
+        description: >-
+          type controls how the per-role results are combined (required_all,
+          required_all_if_set, etc.).
+
+          Each role is first evaluated on its own according to its assignment:
+          an *_ANY assignment needs a
+
+          signature from at least one of the role's addresses, and every other
+          assignment needs signatures
+
+          from all of them.
+        type: string
+        enum:
+          - SIGNATURE_TYPE_UNSPECIFIED
+          - SIGNATURE_TYPE_REQUIRED_ALL
+          - SIGNATURE_TYPE_REQUIRED_ALL_IF_SET
+          - SIGNATURE_TYPE_REQUIRED_ANY
+          - SIGNATURE_TYPE_REQUIRED_ANY_IF_SET
+        default: SIGNATURE_TYPE_UNSPECIFIED
+      roles:
+        type: array
+        items:
+          type: object
+          properties:
+            registry_role:
+              description: >-
+                registry_role is a role managed within the registry module
+                state.
+
+                Can be used with any assignment type.
+              type: string
+              enum:
+                - REGISTRY_ROLE_UNSPECIFIED
+                - REGISTRY_ROLE_SERVICER
+                - REGISTRY_ROLE_SUBSERVICER
+                - REGISTRY_ROLE_CONTROLLER
+                - REGISTRY_ROLE_CUSTODIAN
+                - REGISTRY_ROLE_BORROWER
+                - REGISTRY_ROLE_ORIGINATOR
+                - REGISTRY_ROLE_LIEN_OWNER
+                - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                - REGISTRY_ROLE_PLEDGEE
+              default: REGISTRY_ROLE_UNSPECIFIED
+            nft_role:
+              description: >-
+                nft_role is a role managed by another module (e.g.,
+                NFT_ROLE_NFT_OWNER from metadata).
+
+                Can only be used with ASSIGNMENT_CURRENT* variants.
+              type: string
+              enum:
+                - NFT_ROLE_UNSPECIFIED
+                - NFT_ROLE_NFT_OWNER
+              default: NFT_ROLE_UNSPECIFIED
+            role_priority:
+              description: >-
+                role_priority is an ordered list of roles; the first one that
+                exists is used.
+              type: object
+              properties:
+                entries:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      registry_role:
+                        description: >-
+                          registry_role is a role managed within the registry
+                          module state.
+                        type: string
+                        enum:
+                          - REGISTRY_ROLE_UNSPECIFIED
+                          - REGISTRY_ROLE_SERVICER
+                          - REGISTRY_ROLE_SUBSERVICER
+                          - REGISTRY_ROLE_CONTROLLER
+                          - REGISTRY_ROLE_CUSTODIAN
+                          - REGISTRY_ROLE_BORROWER
+                          - REGISTRY_ROLE_ORIGINATOR
+                          - REGISTRY_ROLE_LIEN_OWNER
+                          - REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN
+                          - REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE
+                          - REGISTRY_ROLE_PLEDGEE
+                        default: REGISTRY_ROLE_UNSPECIFIED
+                      nft_role:
+                        description: nft_role is a role managed by another module.
+                        type: string
+                        enum:
+                          - NFT_ROLE_UNSPECIFIED
+                          - NFT_ROLE_NFT_OWNER
+                        default: NFT_ROLE_UNSPECIFIED
+                    description: >-
+                      RolePriorityEntry is a single entry in a RolePriority
+                      list.
+                  description: >-
+                    entries is the ordered list of roles to check. The first
+                    existing role is used.
+            registry_class_role:
+              description: >-
+                registry_class_role is a role defined by the entry's registry
+                class (e.g.
+
+                REGISTRY_CLASS_ROLE_MAINTAINER). Can only be used with
+                ASSIGNMENT_CURRENT* variants, and only in
+
+                registry class role authorizations (not in the module params
+                defaults).
+              type: string
+              enum:
+                - REGISTRY_CLASS_ROLE_UNSPECIFIED
+                - REGISTRY_CLASS_ROLE_MAINTAINER
+              default: REGISTRY_CLASS_ROLE_UNSPECIFIED
+            assignment:
+              description: assignment specifies which address(es) to resolve for the role.
+              type: string
+              enum:
+                - ASSIGNMENT_UNSPECIFIED
+                - ASSIGNMENT_CURRENT
+                - ASSIGNMENT_CURRENT_ALL
+                - ASSIGNMENT_CURRENT_ANY
+                - ASSIGNMENT_NEW
+                - ASSIGNMENT_NEW_ANY
+                - ASSIGNMENT_NEW_ALL
+              default: ASSIGNMENT_UNSPECIFIED
+          description: >-
+            RoleAssignment specifies which role and which assignment type to
+            resolve for a signature check.
+        description: roles lists the role assignments that must be checked.
+    description: >-
+      SignatureRequirement defines a single signature check within an
+      authorization path.
+  provenance.registry.v1.SignatureType:
+    type: string
+    enum:
+      - SIGNATURE_TYPE_UNSPECIFIED
+      - SIGNATURE_TYPE_REQUIRED_ALL
+      - SIGNATURE_TYPE_REQUIRED_ALL_IF_SET
+      - SIGNATURE_TYPE_REQUIRED_ANY
+      - SIGNATURE_TYPE_REQUIRED_ANY_IF_SET
+    default: SIGNATURE_TYPE_UNSPECIFIED
+    description: >-
+      SignatureType defines how signature requirements are evaluated.
+
+       - SIGNATURE_TYPE_UNSPECIFIED: SIGNATURE_TYPE_UNSPECIFIED is the default/unset value.
+       - SIGNATURE_TYPE_REQUIRED_ALL: SIGNATURE_TYPE_REQUIRED_ALL requires signatures from ALL listed roles.
+      Fails immediately if any role does not exist in the registry or NFT state.
+       - SIGNATURE_TYPE_REQUIRED_ALL_IF_SET: SIGNATURE_TYPE_REQUIRED_ALL_IF_SET requires signatures from ALL listed roles,
+      but only if they exist. Roles that are not set are silently skipped.
+       - SIGNATURE_TYPE_REQUIRED_ANY: SIGNATURE_TYPE_REQUIRED_ANY requires a signature from AT LEAST ONE of the listed roles.
+      Fails if none of the roles exist.
+       - SIGNATURE_TYPE_REQUIRED_ANY_IF_SET: SIGNATURE_TYPE_REQUIRED_ANY_IF_SET requires a signature from AT LEAST ONE of the listed roles,
+      but only if any of them exist. Skips the entire requirement if none of the
+      roles are set.
+  provenance.registry.v1.MsgApproveRoleChangeResponse:
+    type: object
+    properties:
+      applied:
+        type: boolean
+        description: >-
+          applied is true if this approval satisfied the policy and the change
+          was applied.
+      expired:
+        type: boolean
+        description: >-
+          expired is true if the pending change had expired. The approval was
+          not recorded, and the
+
+          expired change was removed from state.
+    description: MsgApproveRoleChangeResponse defines the response for ApproveRoleChange.
+  provenance.registry.v1.MsgAssociateRegistryClassResponse:
+    type: object
+    description: >-
+      MsgAssociateRegistryClassResponse defines the response for
+      AssociateRegistryClass.
+  provenance.registry.v1.MsgCancelRoleChangeResponse:
+    type: object
+    description: MsgCancelRoleChangeResponse defines the response for CancelRoleChange.
+  provenance.registry.v1.MsgCreateRegistryClassResponse:
+    type: object
+    description: >-
+      MsgCreateRegistryClassResponse defines the response for
+      CreateRegistryClass.
   provenance.registry.v1.MsgGrantRoleResponse:
     type: object
     description: |-
       MsgGrantRoleResponse defines the response for GrantRole.
       This is an empty response indicating successful role grant.
+  provenance.registry.v1.MsgProposeRoleChangeResponse:
+    type: object
+    properties:
+      change_id:
+        type: string
+        description: >-
+          change_id is the deterministic identifier of the pending change. It is
+          also returned when the
+
+          change auto-applied immediately (e.g. a single-party policy satisfied
+          by the proposer).
+      applied:
+        type: boolean
+        description: >-
+          applied is true if the proposal alone satisfied the policy and the
+          change was applied.
+    description: MsgProposeRoleChangeResponse defines the response for ProposeRoleChange.
   provenance.registry.v1.MsgRegisterNFTResponse:
     type: object
     description: |-
@@ -98279,11 +102246,22 @@ definitions:
     description: |-
       MsgRevokeRoleResponse defines the response for RevokeRole.
       This is an empty response indicating successful role revocation.
+  provenance.registry.v1.MsgSetRolesResponse:
+    type: object
+    description: MsgSetRolesResponse defines the response for SetRoles.
   provenance.registry.v1.MsgUnregisterNFTResponse:
     type: object
     description: |-
       MsgUnregisterNFTResponse defines the response for UnregisterNFT.
       This is an empty response indicating successful unregistration.
+  provenance.registry.v1.MsgUpdateParamsResponse:
+    type: object
+    description: MsgUpdateParamsResponse defines the response for UpdateParams.
+  provenance.registry.v1.MsgUpdateRegistryClassRoleAuthorizationResponse:
+    type: object
+    description: |-
+      MsgUpdateRegistryClassRoleAuthorizationResponse defines the response for
+      UpdateRegistryClassRoleAuthorization.
   provenance.trigger.v1.QueryTriggerByIDResponse:
     type: object
     properties:

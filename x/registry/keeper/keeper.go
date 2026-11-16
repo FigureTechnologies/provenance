@@ -14,14 +14,22 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/cosmos/gogoproto/proto"
 
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+
 	"github.com/provenance-io/provenance/x/registry/types"
 )
 
 // Keeper defines the registry keeper.
 type Keeper struct {
-	cdc      codec.BinaryCodec
-	schema   collections.Schema
-	Registry collections.Map[collections.Pair[string, string], types.RegistryEntry]
+	cdc                codec.BinaryCodec
+	schema             collections.Schema
+	Registry           collections.Map[collections.Pair[string, string], types.RegistryEntry]
+	PendingRoleChanges collections.Map[string, types.PendingRoleChange]
+	RegistryClasses    collections.Map[string, types.RegistryClass]
+	Params             collections.Item[types.Params]
+
+	authority string
 
 	NFTKeeper      NFTKeeper
 	MetadataKeeper MetadataKeeper
@@ -41,6 +49,31 @@ func NewKeeper(cdc codec.BinaryCodec, storeService store.KVStoreService, nftKeep
 			collections.PairKeyCodec(collections.StringKey, collections.StringKey),
 			codec.CollValue[types.RegistryEntry](cdc),
 		),
+
+		PendingRoleChanges: collections.NewMap(
+			sb,
+			collections.NewPrefix(pendingRoleChangePrefix),
+			"pending_role_changes",
+			collections.StringKey,
+			codec.CollValue[types.PendingRoleChange](cdc),
+		),
+
+		RegistryClasses: collections.NewMap(
+			sb,
+			collections.NewPrefix(registryClassPrefix),
+			"registry_classes",
+			collections.StringKey,
+			codec.CollValue[types.RegistryClass](cdc),
+		),
+
+		Params: collections.NewItem(
+			sb,
+			collections.NewPrefix(paramsPrefix),
+			"params",
+			codec.CollValue[types.Params](cdc),
+		),
+
+		authority: authtypes.NewModuleAddress(govtypes.ModuleName).String(),
 
 		NFTKeeper:      nftKeeper,
 		MetadataKeeper: metaDataKeeper,
@@ -85,12 +118,24 @@ func (k Keeper) CreateDefaultRegistry(ctx context.Context, ownerAddrStr string, 
 		Addresses: []string{ownerAddrStr},
 	}
 
-	return k.CreateRegistry(ctx, key, roles)
+	return k.CreateRegistry(ctx, key, roles, "")
 }
 
 // CreateRegistry stores a new registry entry in state.
 // Returns an error if the registry already exists, or if there's a problem.
-func (k Keeper) CreateRegistry(ctx context.Context, key *types.RegistryKey, roles []types.RolesEntry) error {
+func (k Keeper) CreateRegistry(ctx context.Context, key *types.RegistryKey, roles []types.RolesEntry, registryClassID string) error {
+	if key == nil {
+		return fmt.Errorf("registry key must not be nil")
+	}
+
+	// Defense in depth: enforce the registry class invariant at the keeper layer so invalid state
+	// cannot be introduced via direct keeper calls (other modules/tests) that bypass the msg and
+	// genesis validation paths. When set, the class must exist and be scoped to this entry's asset
+	// class; otherwise authorization would later resolve against the wrong policy tier.
+	if err := k.validateRegistryClassForEntry(ctx, registryClassID, key.AssetClassId); err != nil {
+		return err
+	}
+
 	// Already exists check
 	has, err := k.Registry.Has(ctx, key.CollKey())
 	if err != nil {
@@ -101,8 +146,9 @@ func (k Keeper) CreateRegistry(ctx context.Context, key *types.RegistryKey, role
 	}
 
 	err = k.Registry.Set(ctx, key.CollKey(), types.RegistryEntry{
-		Key:   key,
-		Roles: roles,
+		Key:             key,
+		Roles:           roles,
+		RegistryClassId: registryClassID,
 	})
 	if err != nil {
 		return fmt.Errorf("could not set registry entry: %w", err)
@@ -127,6 +173,17 @@ func (k Keeper) DeleteRegistry(ctx context.Context, key *types.RegistryKey) erro
 	err = k.Registry.Remove(ctx, key.CollKey())
 	if err != nil {
 		return fmt.Errorf("error removing registry: %w", err)
+	}
+
+	// Remove any pending role changes so stale approvals cannot be replayed if the NFT is re-registered.
+	pending, _, err := k.GetPendingRoleChanges(ctx, nil, key)
+	if err != nil {
+		return fmt.Errorf("error fetching pending role changes for cleanup: %w", err)
+	}
+	for _, pc := range pending {
+		if err := k.RemovePendingRoleChange(ctx, pc.Id); err != nil {
+			return fmt.Errorf("error removing stale pending role change %s: %w", pc.Id, err)
+		}
 	}
 
 	k.EmitEvent(ctx, types.NewEventNFTUnregistered(key))
@@ -235,6 +292,50 @@ func (k Keeper) RevokeRole(ctx context.Context, key *types.RegistryKey, role typ
 	return nil
 }
 
+// roleChangeSigners resolves the RoleSigner entries describing who authorized a role change for the
+// given role. For a policy-governed role it returns the satisfying authorization path's signers; for
+// a non-policy role it returns the NFT owner among the approvers (the legacy fallback). before is the
+// pre-mutation entry, newAddrs the addresses being assigned to the role, and approvers the signers.
+func (k Keeper) roleChangeSigners(ctx context.Context, before *types.RegistryEntry, role types.RegistryRole, newAddrs, approvers []string) ([]types.RoleSigner, error) {
+	roleAuths, err := k.roleAuthorizationsForEntry(ctx, before)
+	if err != nil {
+		return nil, err
+	}
+	if roleAuth, ok := roleAuths[role]; ok {
+		return k.CollectSatisfyingSigners(ctx, roleAuth, before, newAddrs, approvers), nil
+	}
+	for _, a := range approvers {
+		if k.ValidateNFTOwner(ctx, &before.Key.AssetClassId, &before.Key.NftId, a) == nil {
+			return []types.RoleSigner{types.NewNFTOwnerSigner(a)}, nil
+		}
+	}
+	return nil, nil
+}
+
+// emitRoleUpdated emits the comprehensive EventRoleUpdated for a single role, reading the
+// post-mutation addresses from state. before is the pre-mutation entry (source of previous
+// addresses and registry class id), and signers is the authorizing signer set. It returns a
+// deterministic error (rather than panicking) if the post-mutation read-back fails, so an
+// inconsistent store cannot halt block processing.
+func (k Keeper) emitRoleUpdated(ctx context.Context, before *types.RegistryEntry, role types.RegistryRole, signers []types.RoleSigner) error {
+	previous := before.GetRoleAddrs(role)
+	var current []string
+	after, err := k.GetRegistry(ctx, before.Key)
+	if err != nil {
+		// The mutation has already been committed; a read-back error means the store is
+		// inconsistent. Surface the error rather than emit a misleading audit event with empty
+		// addresses; returning it rolls back the transaction deterministically.
+		return fmt.Errorf("could not read back registry %q for EventRoleUpdated: %w", before.Key.String(), err)
+	}
+	// after may legitimately be nil if the role change removed the entry's last role and the entry
+	// was cleaned up; in that case current is correctly empty.
+	if after != nil {
+		current = after.GetRoleAddrs(role)
+	}
+	k.EmitEvent(ctx, types.NewEventRoleUpdated(before.Key, before.RegistryClassId, role, previous, current, signers))
+	return nil
+}
+
 func (k Keeper) HasRole(ctx context.Context, key *types.RegistryKey, role types.RegistryRole, address string) (bool, error) {
 	registryEntry, err := k.Registry.Get(ctx, key.CollKey())
 	if err != nil {
@@ -284,6 +385,65 @@ func (k Keeper) GetRegistry(ctx context.Context, key *types.RegistryKey) (*types
 // SetRegistry sets a registry entry for a given key.
 func (k Keeper) SetRegistry(ctx context.Context, entry types.RegistryEntry) error {
 	return k.Registry.Set(ctx, entry.Key.CollKey(), entry)
+}
+
+// SetRoles atomically sets the desired state for one or more roles on a registry entry.
+// Each RoleUpdate specifies a role and the complete desired set of addresses; an empty
+// address list clears the role entirely.
+func (k Keeper) SetRoles(ctx context.Context, key *types.RegistryKey, roleUpdates []types.RoleUpdate) error {
+	entry, err := k.Registry.Get(ctx, key.CollKey())
+	if err != nil {
+		if errors.Is(err, collections.ErrNotFound) {
+			return types.NewErrCodeRegistryNotFound(key.String())
+		}
+		return fmt.Errorf("failed to get registry entry: %w", err)
+	}
+
+	// Snapshot the original entry to compute diff events. The loop below mutates entry.Roles
+	// (and individual Addresses slices) in place, so a shallow copy would corrupt the snapshot
+	// and produce incorrect diffs. Deep-copy the Roles slice and each Addresses slice.
+	origCopy := entry
+	origCopy.Roles = make([]types.RolesEntry, len(entry.Roles))
+	for i, re := range entry.Roles {
+		origCopy.Roles[i] = types.RolesEntry{Role: re.Role, Addresses: slices.Clone(re.Addresses)}
+	}
+
+	for _, update := range roleUpdates {
+		roleI := -1
+		for i, re := range entry.Roles {
+			if re.Role == update.Role {
+				roleI = i
+				break
+			}
+		}
+
+		if len(update.Addresses) == 0 {
+			// Clear the role if present.
+			if roleI >= 0 {
+				entry.Roles = append(entry.Roles[:roleI], entry.Roles[roleI+1:]...)
+			}
+		} else {
+			// Set the complete desired address list for the role.
+			if roleI >= 0 {
+				entry.Roles[roleI].Addresses = update.Addresses
+			} else {
+				entry.Roles = append(entry.Roles, types.RolesEntry{Role: update.Role, Addresses: update.Addresses})
+			}
+		}
+	}
+
+	if err = k.Registry.Set(ctx, key.CollKey(), entry); err != nil {
+		return fmt.Errorf("failed to set registry entry: %w", err)
+	}
+
+	grantEvents, revokeEvents := types.GetChangeEvents(&origCopy, &entry)
+	for _, tev := range grantEvents {
+		k.EmitEvent(ctx, tev)
+	}
+	for _, tev := range revokeEvents {
+		k.EmitEvent(ctx, tev)
+	}
+	return nil
 }
 
 // GetRegistries returns the registries paginated
