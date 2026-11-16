@@ -46,5 +46,41 @@ func (m *GenesisState) Validate() error {
 		return fmt.Errorf("params: %w", err)
 	}
 
+	if err := m.validatePendingRoleChanges(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validatePendingRoleChanges validates the genesis pending role changes. Each change must be valid,
+// change ids must be unique, each change must target a registry entry in this genesis, and there may
+// be at most one pending change per registry entry (matching the limit enforced at runtime).
+func (m *GenesisState) validatePendingRoleChanges() error {
+	entryKeys := make(map[string]bool, len(m.Entries))
+	for _, entry := range m.Entries {
+		entryKeys[entry.Key.String()] = true
+	}
+
+	seenIDs := make(map[string]bool, len(m.PendingRoleChanges))
+	keysWithChange := make(map[string]string, len(m.PendingRoleChanges))
+	for _, change := range m.PendingRoleChanges {
+		if err := change.Validate(); err != nil {
+			return fmt.Errorf("pending role change %q: %w", change.Id, err)
+		}
+		if seenIDs[change.Id] {
+			return fmt.Errorf("duplicate pending role change id: %q", change.Id)
+		}
+		seenIDs[change.Id] = true
+
+		key := change.Key.String()
+		if !entryKeys[key] {
+			return fmt.Errorf("pending role change %q references unknown registry entry %q", change.Id, key)
+		}
+		if otherID, ok := keysWithChange[key]; ok {
+			return fmt.Errorf("pending role changes %q and %q both target registry entry %q; at most one is allowed", otherID, change.Id, key)
+		}
+		keysWithChange[key] = change.Id
+	}
 	return nil
 }

@@ -421,3 +421,25 @@ func (s *KeeperTestSuite) TestGenesisRoundTrip() {
 		s.Require().True(found, "Entry not found in second export: %v", e1.Key)
 	}
 }
+
+// TestExportGenesis_PendingRoleChangeValidates verifies that a genesis exported with an open pending
+// role change passes genesis validation and can be imported.
+func (s *KeeperTestSuite) TestExportGenesis_PendingRoleChangeValidates() {
+	key := &types.RegistryKey{AssetClassId: s.validNFTClass.Id, NftId: s.validNFT.Id}
+	s.Require().NoError(s.app.RegistryKeeper.SetParams(s.ctx, types.Params{
+		RoleAuthorizations: types.ControllerRoleAuthorizations(),
+	}))
+	s.Require().NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
+	}, ""))
+	changeID, applied, err := s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, []types.RoleUpdate{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
+	})
+	s.Require().NoError(err)
+	s.Require().False(applied)
+
+	exported := s.app.RegistryKeeper.ExportGenesis(s.ctx)
+	s.Require().Len(exported.PendingRoleChanges, 1)
+	s.Require().Equal(changeID, exported.PendingRoleChanges[0].Id)
+	s.Require().NoError(exported.Validate())
+}
