@@ -905,113 +905,143 @@ func (s *KeeperTestSuite) TestCancelRoleChange() {
 	require.Nil(change, "pending change must not exist after cancellation")
 }
 
-// TestPendingRoleChange_Expiry verifies that approvals on an expired pending change are rejected
-// and the expired record is cleaned up.
-func (s *KeeperTestSuite) TestPendingRoleChange_Expiry() {
-	key := &types.RegistryKey{
-		AssetClassId: s.validNFTClass.Id,
-		NftId:        s.validNFT.Id,
+// runTx runs fn against a cached copy of the suite context and keeps its writes only if fn
+// succeeds, mirroring how the SDK discards all state changes from a failed transaction.
+func (s *KeeperTestSuite) runTx(fn func(ctx sdk.Context) error) error {
+	cacheCtx, write := s.ctx.CacheContext()
+	err := fn(cacheCtx)
+	if err == nil {
+		write()
 	}
-	require := s.Require()
-
-	require.NoError(s.app.RegistryKeeper.SetParams(s.ctx, types.Params{
-		RoleAuthorizations:   types.ControllerRoleAuthorizations(),
-		PendingChangeExpiry:  time.Hour,
-	}))
-	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
-		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
-	}, ""))
-
-	changeID, applied, err := s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, []types.RoleUpdate{
-		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
-	})
-	require.NoError(err)
-	require.False(applied)
-
-	// Advance block time past the expiry.
-	s.ctx = s.ctx.WithBlockTime(s.ctx.BlockTime().Add(2 * time.Hour))
-
-	// Approval after expiry must be rejected and the record removed.
-	_, err = s.app.RegistryKeeper.ApproveRoleChange(s.ctx, s.user2, changeID)
-	require.Error(err, "approving an expired change must fail")
-	require.Contains(err.Error(), "pending role change not found")
-
-	change, err := s.app.RegistryKeeper.GetPendingRoleChange(s.ctx, changeID)
-	require.NoError(err)
-	require.Nil(change, "expired change must be removed on failed approval")
-
-	// After expiry cleans up via ApproveRoleChange, a new proposal must succeed.
-	_, _, err = s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, []types.RoleUpdate{
-		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
-	})
-	require.NoError(err, "new proposal must be accepted after expired record is cleaned up")
+	return err
 }
 
-// TestPendingRoleChange_ExpiredBlocksProposal verifies that an expired pending change is cleaned
-// up eagerly when a new proposal is made, instead of blocking it indefinitely.
-func (s *KeeperTestSuite) TestPendingRoleChange_ExpiredBlocksProposal() {
-	key := &types.RegistryKey{
-		AssetClassId: s.validNFTClass.Id,
-		NftId:        s.validNFT.Id,
-	}
-	require := s.Require()
-
-	require.NoError(s.app.RegistryKeeper.SetParams(s.ctx, types.Params{
-		RoleAuthorizations:  types.ControllerRoleAuthorizations(),
-		PendingChangeExpiry: time.Hour,
-	}))
-	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
-		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
-	}, ""))
-
-	// First proposal leaves a pending change that will expire.
-	_, _, err := s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, []types.RoleUpdate{
-		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
-	})
-	require.NoError(err)
-
-	// Advance past expiry.
-	s.ctx = s.ctx.WithBlockTime(s.ctx.BlockTime().Add(2 * time.Hour))
-
-	// A new proposal with different role updates must succeed: the expired record is cleaned up
-	// eagerly rather than blocking the new proposal.
-	_, _, err = s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, []types.RoleUpdate{
-		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
-	})
-	require.NoError(err, "proposal must succeed after expired pending change is cleaned up")
-}
-
-// TestPendingRoleChange_ExpiryBypassViaPropose verifies that MsgProposeRoleChange also enforces
-// expiry when reusing an existing pending record, preventing the expiry from being bypassed.
-func (s *KeeperTestSuite) TestPendingRoleChange_ExpiryBypassViaPropose() {
-	key := &types.RegistryKey{
-		AssetClassId: s.validNFTClass.Id,
-		NftId:        s.validNFT.Id,
-	}
-	require := s.Require()
-
-	require.NoError(s.app.RegistryKeeper.SetParams(s.ctx, types.Params{
-		RoleAuthorizations:  types.ControllerRoleAuthorizations(),
-		PendingChangeExpiry: time.Hour,
-	}))
-	require.NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
-		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
-	}, ""))
-
-	// Propose a change; user2 has not yet co-signed.
+// setupExpiringControllerChange installs the CONTROLLER policy with a one hour pending change
+// expiry, registers the suite NFT with user1 as CONTROLLER, has user1 propose a transfer to user2
+// (which also needs user2's approval), and advances the block time past the expiry.
+func (s *KeeperTestSuite) setupExpiringControllerChange() (*types.RegistryKey, []types.RoleUpdate, string) {
+	key := &types.RegistryKey{AssetClassId: s.validNFTClass.Id, NftId: s.validNFT.Id}
 	roleUpdates := []types.RoleUpdate{
 		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user2}},
 	}
-	_, _, err := s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user1, key, roleUpdates)
-	require.NoError(err)
+	s.Require().NoError(s.app.RegistryKeeper.SetParams(s.ctx, types.Params{
+		RoleAuthorizations:  types.ControllerRoleAuthorizations(),
+		PendingChangeExpiry: time.Hour,
+	}))
+	s.Require().NoError(s.app.RegistryKeeper.CreateRegistry(s.ctx, key, []types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}},
+	}, ""))
 
-	// Advance past expiry.
+	msgServer := keeper.NewMsgServer(s.app.RegistryKeeper)
+	var changeID string
+	s.Require().NoError(s.runTx(func(ctx sdk.Context) error {
+		resp, err := msgServer.ProposeRoleChange(ctx, &types.MsgProposeRoleChange{Signer: s.user1, Key: key, RoleUpdates: roleUpdates})
+		if err == nil {
+			s.Require().False(resp.Applied)
+			changeID = resp.ChangeId
+		}
+		return err
+	}))
+
 	s.ctx = s.ctx.WithBlockTime(s.ctx.BlockTime().Add(2 * time.Hour))
+	return key, roleUpdates, changeID
+}
 
-	// Attempting to co-approve via ProposeRoleChange (same change ID) must also be rejected.
-	_, _, err = s.app.RegistryKeeper.ProposeRoleChange(s.ctx, s.user2, key, roleUpdates)
-	require.Error(err, "propose co-approval on expired change must fail")
-	require.Contains(err.Error(), "pending role change not found")
+// TestPendingRoleChange_Expiry verifies that approving an expired pending change does not record
+// the approval or apply the change, and that the expired record is removed in a way that survives
+// the transaction boundary.
+func (s *KeeperTestSuite) TestPendingRoleChange_Expiry() {
+	require := s.Require()
+	key, roleUpdates, changeID := s.setupExpiringControllerChange()
+	msgServer := keeper.NewMsgServer(s.app.RegistryKeeper)
+
+	var resp *types.MsgApproveRoleChangeResponse
+	require.NoError(s.runTx(func(ctx sdk.Context) error {
+		var err error
+		resp, err = msgServer.ApproveRoleChange(ctx, &types.MsgApproveRoleChange{Signer: s.user2, ChangeId: changeID})
+		return err
+	}), "approving an expired change must not fail, so its removal is kept")
+	require.True(resp.Expired)
+	require.False(resp.Applied)
+
+	change, err := s.app.RegistryKeeper.GetPendingRoleChange(s.ctx, changeID)
+	require.NoError(err)
+	require.Nil(change, "expired change must be removed after the transaction")
+	hasRole, err := s.app.RegistryKeeper.HasRole(s.ctx, key, types.RegistryRole_REGISTRY_ROLE_CONTROLLER, s.user1)
+	require.NoError(err)
+	require.True(hasRole, "an expired change must not be applied")
+
+	// Approving again finds nothing to approve.
+	err = s.runTx(func(ctx sdk.Context) error {
+		_, err := msgServer.ApproveRoleChange(ctx, &types.MsgApproveRoleChange{Signer: s.user2, ChangeId: changeID})
+		return err
+	})
+	require.ErrorContains(err, "pending role change not found")
+
+	// The same role updates can be proposed again.
+	require.NoError(s.runTx(func(ctx sdk.Context) error {
+		_, err := msgServer.ProposeRoleChange(ctx, &types.MsgProposeRoleChange{Signer: s.user1, Key: key, RoleUpdates: roleUpdates})
+		return err
+	}), "new proposal must be accepted after the expired record is removed")
+}
+
+// TestPendingRoleChange_ExpiredBlocksProposal verifies that an expired pending change is removed
+// when a different change is proposed for the same NFT, instead of blocking it indefinitely.
+func (s *KeeperTestSuite) TestPendingRoleChange_ExpiredBlocksProposal() {
+	require := s.Require()
+	key, _, oldID := s.setupExpiringControllerChange()
+	msgServer := keeper.NewMsgServer(s.app.RegistryKeeper)
+
+	require.NoError(s.runTx(func(ctx sdk.Context) error {
+		_, err := msgServer.ProposeRoleChange(ctx, &types.MsgProposeRoleChange{
+			Signer:      s.user1,
+			Key:         key,
+			RoleUpdates: []types.RoleUpdate{{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1}}},
+		})
+		return err
+	}), "proposal must succeed after the expired pending change is removed")
+
+	change, err := s.app.RegistryKeeper.GetPendingRoleChange(s.ctx, oldID)
+	require.NoError(err)
+	require.Nil(change, "expired change must be removed after the transaction")
+}
+
+// TestPendingRoleChange_ExpiryBypassViaPropose verifies that proposing the same role updates as an
+// expired pending change replaces it with a new pending change. Approvals recorded before the expiry
+// are discarded, so the expiry cannot be bypassed by co-approving through MsgProposeRoleChange.
+func (s *KeeperTestSuite) TestPendingRoleChange_ExpiryBypassViaPropose() {
+	require := s.Require()
+	key, roleUpdates, changeID := s.setupExpiringControllerChange()
+	msgServer := keeper.NewMsgServer(s.app.RegistryKeeper)
+
+	// user2 proposes the same change. Without user1's expired approval, the policy is not satisfied.
+	require.NoError(s.runTx(func(ctx sdk.Context) error {
+		resp, err := msgServer.ProposeRoleChange(ctx, &types.MsgProposeRoleChange{Signer: s.user2, Key: key, RoleUpdates: roleUpdates})
+		if err == nil {
+			require.Equal(changeID, resp.ChangeId)
+			require.False(resp.Applied, "approvals from the expired change must not be used")
+		}
+		return err
+	}))
+
+	change, err := s.app.RegistryKeeper.GetPendingRoleChange(s.ctx, changeID)
+	require.NoError(err)
+	require.NotNil(change)
+	require.Equal(s.user2, change.Proposer)
+	require.Equal([]string{s.user2}, change.Approvals)
+	require.Equal(s.ctx.BlockTime().Add(time.Hour), change.ExpiresAt, "the new pending change must have a new expiry")
+
+	// user1 approves the new pending change, which now satisfies the policy.
+	require.NoError(s.runTx(func(ctx sdk.Context) error {
+		resp, err := msgServer.ApproveRoleChange(ctx, &types.MsgApproveRoleChange{Signer: s.user1, ChangeId: changeID})
+		if err == nil {
+			require.True(resp.Applied)
+		}
+		return err
+	}))
+	hasRole, err := s.app.RegistryKeeper.HasRole(s.ctx, key, types.RegistryRole_REGISTRY_ROLE_CONTROLLER, s.user2)
+	require.NoError(err)
+	require.True(hasRole)
 }
 
 func (s *KeeperTestSuite) TestRegisterNFTMsgServer() {

@@ -253,3 +253,114 @@ func (s *KeeperTestSuite) TestEngine_RegistryClassMaintainer() {
 		})
 	}
 }
+
+// TestEngine_AssignmentAnyAllWithSignatureType verifies that each role assignment's address-level
+// condition (*_ANY: at least one address signs; *_ALL: every address signs) is evaluated first, and
+// that the signature type only combines those per-role results.
+func (s *KeeperTestSuite) TestEngine_AssignmentAnyAllWithSignatureType() {
+	user3 := genAddr()
+	entry := s.engineEntry([]types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1, s.user2}},
+	})
+	newAddrs := []string{s.user2, user3}
+
+	tests := []struct {
+		name       string
+		sigType    types.SignatureType
+		role       types.RegistryRole
+		assignment types.Assignment
+		signers    []string
+		expErr     string
+	}{
+		{name: "required_all + current_any: one holder signs", sigType: types.SignatureType_SIGNATURE_TYPE_REQUIRED_ALL, role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, assignment: types.Assignment_ASSIGNMENT_CURRENT_ANY, signers: []string{s.user1}},
+		{name: "required_all + current_any: no holder signs", sigType: types.SignatureType_SIGNATURE_TYPE_REQUIRED_ALL, role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, assignment: types.Assignment_ASSIGNMENT_CURRENT_ANY, signers: []string{user3}, expErr: "missing required signature from any of"},
+		{name: "required_all + current_all: one holder signs", sigType: types.SignatureType_SIGNATURE_TYPE_REQUIRED_ALL, role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, assignment: types.Assignment_ASSIGNMENT_CURRENT_ALL, signers: []string{s.user1}, expErr: "missing required signature for"},
+		{name: "required_all + current_all: all holders sign", sigType: types.SignatureType_SIGNATURE_TYPE_REQUIRED_ALL, role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, assignment: types.Assignment_ASSIGNMENT_CURRENT_ALL, signers: []string{s.user1, s.user2}},
+		{name: "required_any + current_all: one holder signs", sigType: types.SignatureType_SIGNATURE_TYPE_REQUIRED_ANY, role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, assignment: types.Assignment_ASSIGNMENT_CURRENT_ALL, signers: []string{s.user1}, expErr: "no required signature found in any role"},
+		{name: "required_any + current_all: all holders sign", sigType: types.SignatureType_SIGNATURE_TYPE_REQUIRED_ANY, role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, assignment: types.Assignment_ASSIGNMENT_CURRENT_ALL, signers: []string{s.user1, s.user2}},
+		{name: "required_any + current_any: one holder signs", sigType: types.SignatureType_SIGNATURE_TYPE_REQUIRED_ANY, role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, assignment: types.Assignment_ASSIGNMENT_CURRENT_ANY, signers: []string{s.user2}},
+		{name: "required_any_if_set + current_all: one holder signs", sigType: types.SignatureType_SIGNATURE_TYPE_REQUIRED_ANY_IF_SET, role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, assignment: types.Assignment_ASSIGNMENT_CURRENT_ALL, signers: []string{s.user1}, expErr: "no required signature found in any role"},
+		{name: "required_all_if_set + current_any: one holder signs", sigType: types.SignatureType_SIGNATURE_TYPE_REQUIRED_ALL_IF_SET, role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, assignment: types.Assignment_ASSIGNMENT_CURRENT_ANY, signers: []string{s.user2}},
+		{name: "required_all + new_any: one new address signs", sigType: types.SignatureType_SIGNATURE_TYPE_REQUIRED_ALL, role: types.RegistryRole_REGISTRY_ROLE_SERVICER, assignment: types.Assignment_ASSIGNMENT_NEW_ANY, signers: []string{user3}},
+		{name: "required_any + new_all: one new address signs", sigType: types.SignatureType_SIGNATURE_TYPE_REQUIRED_ANY, role: types.RegistryRole_REGISTRY_ROLE_SERVICER, assignment: types.Assignment_ASSIGNMENT_NEW_ALL, signers: []string{user3}, expErr: "no required signature found in any role"},
+		{name: "required_any + new_all: all new addresses sign", sigType: types.SignatureType_SIGNATURE_TYPE_REQUIRED_ANY, role: types.RegistryRole_REGISTRY_ROLE_SERVICER, assignment: types.Assignment_ASSIGNMENT_NEW_ALL, signers: []string{s.user2, user3}},
+	}
+
+	for _, tc := range tests {
+		s.Run(tc.name, func() {
+			policy := types.RoleAuthorization{
+				Role: types.RegistryRole_REGISTRY_ROLE_SERVICER,
+				Authorizations: []*types.Authorization{{
+					Signatures: []*types.SignatureRequirement{{
+						Type: tc.sigType,
+						Roles: []*types.RoleAssignment{{
+							RoleSelector: &types.RoleAssignment_RegistryRole{RegistryRole: tc.role},
+							Assignment:   tc.assignment,
+						}},
+					}},
+				}},
+			}
+			err := s.app.RegistryKeeper.ValidateRoleChangeAuthorization(s.ctx, policy, entry, newAddrs, tc.signers)
+			if tc.expErr == "" {
+				s.Require().NoError(err)
+				return
+			}
+			s.Require().Error(err)
+			s.Require().Contains(err.Error(), tc.expErr)
+		})
+	}
+}
+
+// TestEngine_RequiredAnyCombinesRoleResults verifies that REQUIRED_ANY passes only when at least one
+// role's own assignment-level condition is satisfied, not when signatures are spread across roles.
+func (s *KeeperTestSuite) TestEngine_RequiredAnyCombinesRoleResults() {
+	user3 := genAddr()
+	entry := s.engineEntry([]types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1, s.user2}},
+		{Role: types.RegistryRole_REGISTRY_ROLE_PLEDGEE, Addresses: []string{user3}},
+	})
+	policy := types.RoleAuthorization{
+		Role: types.RegistryRole_REGISTRY_ROLE_SERVICER,
+		Authorizations: []*types.Authorization{{
+			Signatures: []*types.SignatureRequirement{{
+				Type: types.SignatureType_SIGNATURE_TYPE_REQUIRED_ANY,
+				Roles: []*types.RoleAssignment{
+					{RoleSelector: &types.RoleAssignment_RegistryRole{RegistryRole: types.RegistryRole_REGISTRY_ROLE_CONTROLLER}, Assignment: types.Assignment_ASSIGNMENT_CURRENT_ALL},
+					{RoleSelector: &types.RoleAssignment_RegistryRole{RegistryRole: types.RegistryRole_REGISTRY_ROLE_PLEDGEE}, Assignment: types.Assignment_ASSIGNMENT_CURRENT_ALL},
+				},
+			}},
+		}},
+	}
+
+	err := s.app.RegistryKeeper.ValidateRoleChangeAuthorization(s.ctx, policy, entry, nil, []string{s.user1})
+	s.Require().ErrorContains(err, "no required signature found in any role", "one of two controllers is not enough")
+
+	s.Require().NoError(s.app.RegistryKeeper.ValidateRoleChangeAuthorization(s.ctx, policy, entry, nil, []string{user3}),
+		"the pledgee alone satisfies its role")
+
+	signers := s.app.RegistryKeeper.CollectSatisfyingSigners(s.ctx, policy, entry, nil, []string{s.user1, user3})
+	s.Require().Equal([]types.RoleSigner{{
+		Role:       types.RegistryRole_REGISTRY_ROLE_PLEDGEE.String(),
+		Assignment: types.Assignment_ASSIGNMENT_CURRENT_ALL.String(),
+		Addresses:  []string{user3},
+	}}, signers, "only the satisfied role is reported")
+}
+
+// TestEngine_SignerAttributionForAnyAssignment verifies that only the holders who signed are
+// reported for an *_ANY assignment.
+func (s *KeeperTestSuite) TestEngine_SignerAttributionForAnyAssignment() {
+	entry := s.engineEntry([]types.RolesEntry{
+		{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.user1, s.user2}},
+	})
+	policy := singleSigPolicy(&types.RoleAssignment{
+		RoleSelector: &types.RoleAssignment_RegistryRole{RegistryRole: types.RegistryRole_REGISTRY_ROLE_CONTROLLER},
+		Assignment:   types.Assignment_ASSIGNMENT_CURRENT_ANY,
+	})
+
+	signers := s.app.RegistryKeeper.CollectSatisfyingSigners(s.ctx, policy, entry, nil, []string{s.user2})
+	s.Require().Equal([]types.RoleSigner{{
+		Role:       types.RegistryRole_REGISTRY_ROLE_CONTROLLER.String(),
+		Assignment: types.Assignment_ASSIGNMENT_CURRENT_ANY.String(),
+		Addresses:  []string{s.user2},
+	}}, signers)
+}

@@ -206,11 +206,11 @@ func (k msgServer) ProposeRoleChange(ctx context.Context, msg *types.MsgProposeR
 // ApproveRoleChange records a single-signer approval for a pending role change and auto-applies
 // it once the role's authorization policy is satisfied.
 func (k msgServer) ApproveRoleChange(ctx context.Context, msg *types.MsgApproveRoleChange) (*types.MsgApproveRoleChangeResponse, error) {
-	applied, err := k.Keeper.ApproveRoleChange(ctx, msg.Signer, msg.ChangeId)
+	applied, expired, err := k.Keeper.ApproveRoleChange(ctx, msg.Signer, msg.ChangeId)
 	if err != nil {
 		return nil, err
 	}
-	return &types.MsgApproveRoleChangeResponse{Applied: applied}, nil
+	return &types.MsgApproveRoleChangeResponse{Applied: applied, Expired: expired}, nil
 }
 
 // CancelRoleChange cancels an open pending role change. The original proposer may cancel, as may

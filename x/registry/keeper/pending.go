@@ -120,10 +120,22 @@ func (k Keeper) ProposeRoleChange(ctx context.Context, proposer string, key *typ
 	}
 
 	id := types.NewPendingRoleChangeID(key, roleUpdates)
+	blockTime := sdk.UnwrapSDKContext(ctx).BlockTime()
 
 	change, err := k.GetPendingRoleChange(ctx, id)
 	if err != nil {
 		return "", false, err
+	}
+	if change.IsExpired(blockTime) {
+		/*
+		 * The same role updates were proposed before, but that pending change has expired. Remove it
+		 * and open a new pending change in its place, so approvals recorded before the expiry cannot
+		 * be used. This path succeeds, so the removal persists in a real transaction.
+		 */
+		if err = k.removeExpiredPendingRoleChange(ctx, change.Id); err != nil {
+			return "", false, err
+		}
+		change = nil
 	}
 	if change == nil {
 		// Reject if there's already a different pending change for this key. Limiting to one
@@ -134,11 +146,10 @@ func (k Keeper) ProposeRoleChange(ctx context.Context, proposer string, key *typ
 		if err != nil {
 			return "", false, err
 		}
-		blockTime := sdk.UnwrapSDKContext(ctx).BlockTime()
 		for _, ex := range existing {
-			if !ex.ExpiresAt.IsZero() && !blockTime.Before(ex.ExpiresAt) {
+			if ex.IsExpired(blockTime) {
 				// Expired — remove it so it no longer blocks new proposals.
-				if rerr := k.RemovePendingRoleChange(ctx, ex.Id); rerr != nil {
+				if rerr := k.removeExpiredPendingRoleChange(ctx, ex.Id); rerr != nil {
 					return "", false, rerr
 				}
 				continue
@@ -155,7 +166,7 @@ func (k Keeper) ProposeRoleChange(ctx context.Context, proposer string, key *typ
 		}
 		// Set expiry if the module params configure one.
 		if expiry := k.GetParams(ctx).PendingChangeExpiry; expiry > 0 {
-			newChange.ExpiresAt = sdk.UnwrapSDKContext(ctx).BlockTime().Add(expiry)
+			newChange.ExpiresAt = blockTime.Add(expiry)
 		}
 		// Only open a new pending change when the proposer could actually contribute a valid
 		// approval to at least one affected role. This keeps state from growing via proposals
@@ -171,16 +182,6 @@ func (k Keeper) ProposeRoleChange(ctx context.Context, proposer string, key *typ
 		}
 		change = newChange
 		k.EmitEvent(ctx, types.NewEventRoleChangeProposed(change))
-	} else {
-		// Reusing an existing pending record (same change ID = same role updates, acting as a
-		// co-approval). Check expiry here too so that MsgProposeRoleChange cannot be used to
-		// bypass the expiry enforcement that applies to MsgApproveRoleChange.
-		if !change.ExpiresAt.IsZero() && !sdk.UnwrapSDKContext(ctx).BlockTime().Before(change.ExpiresAt) {
-			if rerr := k.RemovePendingRoleChange(ctx, change.Id); rerr != nil {
-				return "", false, rerr
-			}
-			return "", false, types.NewErrCodePendingChangeNotFound(change.Id + " (expired)")
-		}
 	}
 
 	applied, err := k.recordApprovalAndMaybeApply(ctx, entry, change, proposer)
@@ -191,37 +192,47 @@ func (k Keeper) ProposeRoleChange(ctx context.Context, proposer string, key *typ
 }
 
 // ApproveRoleChange records an approval on an existing pending role change and applies it if the
-// accumulated approvals now satisfy the role's policy. Returns whether the change was applied.
-func (k Keeper) ApproveRoleChange(ctx context.Context, approver string, changeID string) (bool, error) {
+// accumulated approvals now satisfy the role's policy. Returns whether the change was applied, and
+// whether it had expired.
+//
+// An expired change is removed without recording the approval, and no error is returned. Returning
+// an error would roll back the removal in a real transaction, leaving the expired record in place.
+func (k Keeper) ApproveRoleChange(ctx context.Context, approver string, changeID string) (applied bool, expired bool, err error) {
 	change, err := k.GetPendingRoleChange(ctx, changeID)
 	if err != nil {
-		return false, err
+		return false, false, err
 	}
 	if change == nil {
-		return false, types.NewErrCodePendingChangeNotFound(changeID)
+		return false, false, types.NewErrCodePendingChangeNotFound(changeID)
 	}
 
-	// Reject and clean up expired changes.
-	if !change.ExpiresAt.IsZero() && !sdk.UnwrapSDKContext(ctx).BlockTime().Before(change.ExpiresAt) {
-		if rerr := k.RemovePendingRoleChange(ctx, changeID); rerr != nil {
-			return false, rerr
+	if change.IsExpired(sdk.UnwrapSDKContext(ctx).BlockTime()) {
+		if err = k.removeExpiredPendingRoleChange(ctx, changeID); err != nil {
+			return false, false, err
 		}
-		return false, types.NewErrCodePendingChangeNotFound(changeID + " (expired)")
+		return false, true, nil
 	}
 
 	entry, err := k.GetRegistry(ctx, change.Key)
 	if err != nil {
-		return false, err
+		return false, false, err
 	}
 	if entry == nil {
-		// The registry was removed out from under the pending change; clean it up.
-		if rerr := k.RemovePendingRoleChange(ctx, changeID); rerr != nil {
-			return false, rerr
-		}
-		return false, types.NewErrCodeRegistryNotFound(change.Key.String())
+		// DeleteRegistry removes pending changes with the entry, so this indicates inconsistent state.
+		return false, false, types.NewErrCodeRegistryNotFound(change.Key.String())
 	}
 
-	return k.recordApprovalAndMaybeApply(ctx, entry, change, approver)
+	applied, err = k.recordApprovalAndMaybeApply(ctx, entry, change, approver)
+	return applied, false, err
+}
+
+// removeExpiredPendingRoleChange deletes an expired pending role change and emits EventRoleChangeExpired.
+func (k Keeper) removeExpiredPendingRoleChange(ctx context.Context, changeID string) error {
+	if err := k.RemovePendingRoleChange(ctx, changeID); err != nil {
+		return err
+	}
+	k.EmitEvent(ctx, types.NewEventRoleChangeExpired(changeID))
+	return nil
 }
 
 // recordApprovalAndMaybeApply adds approver to the change's approval set, evaluates the role's

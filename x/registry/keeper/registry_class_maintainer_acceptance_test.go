@@ -350,7 +350,7 @@ func (s *RegistryClassMaintainerAcceptanceTestSuite) TestApproveRoleChange_Maint
 	s.Require().False(applied)
 
 	s.ctx = s.ctx.WithEventManager(sdk.NewEventManager())
-	applied, err = s.registryKeeper.ApproveRoleChange(s.ctx, s.maintainer, changeID)
+	applied, _, err = s.registryKeeper.ApproveRoleChange(s.ctx, s.maintainer, changeID)
 	s.Require().NoError(err)
 	s.Require().True(applied, "the maintainer's approval satisfies the maintainer path")
 	s.Require().Equal([]string{s.newController}, s.roleAddrs(key, types.RegistryRole_REGISTRY_ROLE_CONTROLLER))

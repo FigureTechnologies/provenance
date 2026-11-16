@@ -37597,9 +37597,19 @@ paths:
                                   properties:
                                     type:
                                       description: >-
-                                        type controls how the roles are
-                                        evaluated (required_all,
+                                        type controls how the per-role results
+                                        are combined (required_all,
                                         required_all_if_set, etc.).
+
+                                        Each role is first evaluated on its own
+                                        according to its assignment: an *_ANY
+                                        assignment needs a
+
+                                        signature from at least one of the
+                                        role's addresses, and every other
+                                        assignment needs signatures
+
+                                        from all of them.
                                       type: string
                                       enum:
                                         - SIGNATURE_TYPE_UNSPECIFIED
@@ -38655,9 +38665,19 @@ paths:
                                   properties:
                                     type:
                                       description: >-
-                                        type controls how the roles are
-                                        evaluated (required_all,
+                                        type controls how the per-role results
+                                        are combined (required_all,
                                         required_all_if_set, etc.).
+
+                                        Each role is first evaluated on its own
+                                        according to its assignment: an *_ANY
+                                        assignment needs a
+
+                                        signature from at least one of the
+                                        role's addresses, and every other
+                                        assignment needs signatures
+
+                                        from all of them.
                                       type: string
                                       enum:
                                         - SIGNATURE_TYPE_UNSPECIFIED
@@ -38922,9 +38942,19 @@ paths:
                                     properties:
                                       type:
                                         description: >-
-                                          type controls how the roles are
-                                          evaluated (required_all,
+                                          type controls how the per-role results
+                                          are combined (required_all,
                                           required_all_if_set, etc.).
+
+                                          Each role is first evaluated on its own
+                                          according to its assignment: an *_ANY
+                                          assignment needs a
+
+                                          signature from at least one of the
+                                          role's addresses, and every other
+                                          assignment needs signatures
+
+                                          from all of them.
                                         type: string
                                         enum:
                                           - SIGNATURE_TYPE_UNSPECIFIED
@@ -99366,8 +99396,16 @@ definitions:
           properties:
             type:
               description: >-
-                type controls how the roles are evaluated (required_all,
-                required_all_if_set, etc.).
+                type controls how the per-role results are combined
+                (required_all, required_all_if_set, etc.).
+
+                Each role is first evaluated on its own according to its
+                assignment: an *_ANY assignment needs a
+
+                signature from at least one of the role's addresses, and every
+                other assignment needs signatures
+
+                from all of them.
               type: string
               enum:
                 - SIGNATURE_TYPE_UNSPECIFIED
@@ -99557,8 +99595,16 @@ definitions:
                       properties:
                         type:
                           description: >-
-                            type controls how the roles are evaluated
+                            type controls how the per-role results are combined
                             (required_all, required_all_if_set, etc.).
+
+                            Each role is first evaluated on its own according to
+                            its assignment: an *_ANY assignment needs a
+
+                            signature from at least one of the role's addresses,
+                            and every other assignment needs signatures
+
+                            from all of them.
                           type: string
                           enum:
                             - SIGNATURE_TYPE_UNSPECIFIED
@@ -100118,8 +100164,19 @@ definitions:
                           properties:
                             type:
                               description: >-
-                                type controls how the roles are evaluated
-                                (required_all, required_all_if_set, etc.).
+                                type controls how the per-role results are
+                                combined (required_all, required_all_if_set,
+                                etc.).
+
+                                Each role is first evaluated on its own
+                                according to its assignment: an *_ANY assignment
+                                needs a
+
+                                signature from at least one of the role's
+                                addresses, and every other assignment needs
+                                signatures
+
+                                from all of them.
                               type: string
                               enum:
                                 - SIGNATURE_TYPE_UNSPECIFIED
@@ -100589,8 +100646,19 @@ definitions:
                           properties:
                             type:
                               description: >-
-                                type controls how the roles are evaluated
-                                (required_all, required_all_if_set, etc.).
+                                type controls how the per-role results are
+                                combined (required_all, required_all_if_set,
+                                etc.).
+
+                                Each role is first evaluated on its own
+                                according to its assignment: an *_ANY assignment
+                                needs a
+
+                                signature from at least one of the role's
+                                addresses, and every other assignment needs
+                                signatures
+
+                                from all of them.
                               type: string
                               enum:
                                 - SIGNATURE_TYPE_UNSPECIFIED
@@ -100817,8 +100885,19 @@ definitions:
                             properties:
                               type:
                                 description: >-
-                                  type controls how the roles are evaluated
-                                  (required_all, required_all_if_set, etc.).
+                                  type controls how the per-role results are
+                                  combined (required_all, required_all_if_set,
+                                  etc.).
+
+                                  Each role is first evaluated on its own
+                                  according to its assignment: an *_ANY
+                                  assignment needs a
+
+                                  signature from at least one of the role's
+                                  addresses, and every other assignment needs
+                                  signatures
+
+                                  from all of them.
                                 type: string
                                 enum:
                                   - SIGNATURE_TYPE_UNSPECIFIED
@@ -101161,8 +101240,16 @@ definitions:
                       properties:
                         type:
                           description: >-
-                            type controls how the roles are evaluated
+                            type controls how the per-role results are combined
                             (required_all, required_all_if_set, etc.).
+
+                            Each role is first evaluated on its own according to
+                            its assignment: an *_ANY assignment needs a
+
+                            signature from at least one of the role's addresses,
+                            and every other assignment needs signatures
+
+                            from all of them.
                           type: string
                           enum:
                             - SIGNATURE_TYPE_UNSPECIFIED
@@ -101653,8 +101740,16 @@ definitions:
                 properties:
                   type:
                     description: >-
-                      type controls how the roles are evaluated (required_all,
-                      required_all_if_set, etc.).
+                      type controls how the per-role results are combined
+                      (required_all, required_all_if_set, etc.).
+
+                      Each role is first evaluated on its own according to its
+                      assignment: an *_ANY assignment needs a
+
+                      signature from at least one of the role's addresses, and
+                      every other assignment needs signatures
+
+                      from all of them.
                     type: string
                     enum:
                       - SIGNATURE_TYPE_UNSPECIFIED
@@ -101933,8 +102028,16 @@ definitions:
     properties:
       type:
         description: >-
-          type controls how the roles are evaluated (required_all,
+          type controls how the per-role results are combined (required_all,
           required_all_if_set, etc.).
+
+          Each role is first evaluated on its own according to its assignment:
+          an *_ANY assignment needs a
+
+          signature from at least one of the role's addresses, and every other
+          assignment needs signatures
+
+          from all of them.
         type: string
         enum:
           - SIGNATURE_TYPE_UNSPECIFIED
@@ -102085,6 +102188,13 @@ definitions:
         description: >-
           applied is true if this approval satisfied the policy and the change
           was applied.
+      expired:
+        type: boolean
+        description: >-
+          expired is true if the pending change had expired. The approval was
+          not recorded, and the
+
+          expired change was removed from state.
     description: MsgApproveRoleChangeResponse defines the response for ApproveRoleChange.
   provenance.registry.v1.MsgAssociateRegistryClassResponse:
     type: object

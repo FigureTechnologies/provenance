@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // NewPendingRoleChangeID computes the deterministic identifier for a pending role change.
@@ -35,4 +36,9 @@ func NewPendingRoleChangeID(key *RegistryKey, roleUpdates []RoleUpdate) string {
 
 	sum := sha256.Sum256([]byte(b.String()))
 	return hex.EncodeToString(sum[:])
+}
+
+// IsExpired reports whether this pending change has an expiry and the given block time is at or after it.
+func (m *PendingRoleChange) IsExpired(blockTime time.Time) bool {
+	return m != nil && !m.ExpiresAt.IsZero() && !blockTime.Before(m.ExpiresAt)
 }

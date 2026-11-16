@@ -379,7 +379,10 @@ func (m *Authorization) GetSignatures() []*SignatureRequirement {
 
 // SignatureRequirement defines a single signature check within an authorization path.
 type SignatureRequirement struct {
-	// type controls how the roles are evaluated (required_all, required_all_if_set, etc.).
+	// type controls how the per-role results are combined (required_all, required_all_if_set, etc.).
+	// Each role is first evaluated on its own according to its assignment: an *_ANY assignment needs a
+	// signature from at least one of the role's addresses, and every other assignment needs signatures
+	// from all of them.
 	Type SignatureType `protobuf:"varint,1,opt,name=type,proto3,enum=provenance.registry.v1.SignatureType" json:"type,omitempty"`
 	// roles lists the role assignments that must be checked.
 	Roles []*RoleAssignment `protobuf:"bytes,2,rep,name=roles,proto3" json:"roles,omitempty"`

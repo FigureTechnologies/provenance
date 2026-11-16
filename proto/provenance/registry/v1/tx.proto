@@ -50,11 +50,15 @@ service Msg {
   rpc SetRoles(MsgSetRoles) returns (MsgSetRolesResponse);
 
   // ProposeRoleChange opens a pending role change that accumulates single-signer approvals.
-  // The change auto-applies once the role's authorization policy is satisfied.
+  // The change auto-applies once the role's authorization policy is satisfied. Proposing the same
+  // role updates as an expired pending change replaces it with a new pending change; approvals on
+  // the expired change are discarded.
   rpc ProposeRoleChange(MsgProposeRoleChange) returns (MsgProposeRoleChangeResponse);
 
   // ApproveRoleChange records a single-signer approval for an open pending role change.
   // When the accumulated approvals satisfy the role's policy, the change is applied automatically.
+  // Approving an expired pending change does not record the approval; it removes the expired change
+  // and reports it as expired in the response.
   rpc ApproveRoleChange(MsgApproveRoleChange) returns (MsgApproveRoleChangeResponse);
 
   // CreateRegistryClass creates a new registry class that defines asset class-level authorization
@@ -265,6 +269,9 @@ message MsgApproveRoleChange {
 message MsgApproveRoleChangeResponse {
   // applied is true if this approval satisfied the policy and the change was applied.
   bool applied = 1;
+  // expired is true if the pending change had expired. The approval was not recorded, and the
+  // expired change was removed from state.
+  bool expired = 2;
 }
 
 // MsgCancelRoleChange cancels an open pending role change.

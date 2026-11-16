@@ -69,6 +69,11 @@ message EventRoleChangeCancelled {
   string cancelled_by = 2;
 }
 
+// EventRoleChangeExpired is emitted when an expired pending role change is removed from state.
+message EventRoleChangeExpired {
+  string change_id = 1;
+}
+
 // EventRegistryClassCreated is emitted when a registry class is created.
 message EventRegistryClassCreated {
   string registry_class_id = 1;

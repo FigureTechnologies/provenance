@@ -84,6 +84,11 @@ func NewEventRoleChangeCancelled(changeID, cancelledBy string) *EventRoleChangeC
 	}
 }
 
+// NewEventRoleChangeExpired returns a new EventRoleChangeExpired.
+func NewEventRoleChangeExpired(changeID string) *EventRoleChangeExpired {
+	return &EventRoleChangeExpired{ChangeId: changeID}
+}
+
 // NewEventRegistryClassCreated returns a new EventRegistryClassCreated.
 func NewEventRegistryClassCreated(class *RegistryClass) *EventRegistryClassCreated {
 	return &EventRegistryClassCreated{

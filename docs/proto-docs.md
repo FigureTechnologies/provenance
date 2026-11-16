@@ -614,6 +614,7 @@
     - [EventRoleChangeApplied](#provenance-registry-v1-EventRoleChangeApplied)
     - [EventRoleChangeApproved](#provenance-registry-v1-EventRoleChangeApproved)
     - [EventRoleChangeCancelled](#provenance-registry-v1-EventRoleChangeCancelled)
+    - [EventRoleChangeExpired](#provenance-registry-v1-EventRoleChangeExpired)
     - [EventRoleChangeProposed](#provenance-registry-v1-EventRoleChangeProposed)
     - [EventRoleGranted](#provenance-registry-v1-EventRoleGranted)
     - [EventRoleRevoked](#provenance-registry-v1-EventRoleRevoked)
@@ -8997,6 +8998,7 @@ MsgApproveRoleChangeResponse defines the response for ApproveRoleChange.
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | `applied` | [bool](#bool) |  | applied is true if this approval satisfied the policy and the change was applied. |
+| `expired` | [bool](#bool) |  | expired is true if the pending change had expired. The approval was not recorded, and the expired change was removed from state. |
 
 
 
@@ -9382,8 +9384,8 @@ This service provides transaction functionality for managing registry entries an
 | `UnregisterNFT` | [MsgUnregisterNFT](#provenance-registry-v1-MsgUnregisterNFT) | [MsgUnregisterNFTResponse](#provenance-registry-v1-MsgUnregisterNFTResponse) | UnregisterNFT unregisters an NFT from the registry. This removes the entire registry entry for the specified key. If the entry is associated with a registry class, only the registry class maintainer may sign. Otherwise, the CONTROLLER must sign if one is set, or the NFT owner if not. |
 | `RegistryBulkUpdate` | [MsgRegistryBulkUpdate](#provenance-registry-v1-MsgRegistryBulkUpdate) | [MsgRegistryBulkUpdateResponse](#provenance-registry-v1-MsgRegistryBulkUpdateResponse) | RegistryBulkUpdate registers, or updates, multiple NFTs in the registry. This creates multiple registry entries, or updates if one exists. Each registry in this will cost one MsgRegisterNFT. |
 | `SetRoles` | [MsgSetRoles](#provenance-registry-v1-MsgSetRoles) | [MsgSetRolesResponse](#provenance-registry-v1-MsgSetRolesResponse) | SetRoles atomically sets the desired state for one or more roles on a registry entry. The single signer must satisfy each affected role's authorization policy directly; multi-party role changes are made through ProposeRoleChange / ApproveRoleChange. |
-| `ProposeRoleChange` | [MsgProposeRoleChange](#provenance-registry-v1-MsgProposeRoleChange) | [MsgProposeRoleChangeResponse](#provenance-registry-v1-MsgProposeRoleChangeResponse) | ProposeRoleChange opens a pending role change that accumulates single-signer approvals. The change auto-applies once the role's authorization policy is satisfied. |
-| `ApproveRoleChange` | [MsgApproveRoleChange](#provenance-registry-v1-MsgApproveRoleChange) | [MsgApproveRoleChangeResponse](#provenance-registry-v1-MsgApproveRoleChangeResponse) | ApproveRoleChange records a single-signer approval for an open pending role change. When the accumulated approvals satisfy the role's policy, the change is applied automatically. |
+| `ProposeRoleChange` | [MsgProposeRoleChange](#provenance-registry-v1-MsgProposeRoleChange) | [MsgProposeRoleChangeResponse](#provenance-registry-v1-MsgProposeRoleChangeResponse) | ProposeRoleChange opens a pending role change that accumulates single-signer approvals. The change auto-applies once the role's authorization policy is satisfied. Proposing the same role updates as an expired pending change replaces it with a new pending change; approvals on the expired change are discarded. |
+| `ApproveRoleChange` | [MsgApproveRoleChange](#provenance-registry-v1-MsgApproveRoleChange) | [MsgApproveRoleChangeResponse](#provenance-registry-v1-MsgApproveRoleChangeResponse) | ApproveRoleChange records a single-signer approval for an open pending role change. When the accumulated approvals satisfy the role's policy, the change is applied automatically. Approving an expired pending change does not record the approval; it removes the expired change and reports it as expired in the response. |
 | `CreateRegistryClass` | [MsgCreateRegistryClass](#provenance-registry-v1-MsgCreateRegistryClass) | [MsgCreateRegistryClassResponse](#provenance-registry-v1-MsgCreateRegistryClassResponse) | CreateRegistryClass creates a new registry class that defines asset class-level authorization rules for role updates. The signer must match the maintainer address. |
 | `UpdateRegistryClassRoleAuthorization` | [MsgUpdateRegistryClassRoleAuthorization](#provenance-registry-v1-MsgUpdateRegistryClassRoleAuthorization) | [MsgUpdateRegistryClassRoleAuthorizationResponse](#provenance-registry-v1-MsgUpdateRegistryClassRoleAuthorizationResponse) | UpdateRegistryClassRoleAuthorization replaces the authorization rules for an existing registry class. Only the current maintainer may update the rules. |
 | `CancelRoleChange` | [MsgCancelRoleChange](#provenance-registry-v1-MsgCancelRoleChange) | [MsgCancelRoleChangeResponse](#provenance-registry-v1-MsgCancelRoleChangeResponse) | CancelRoleChange cancels an open pending role change. The original proposer or the maintainer of the entry's registry class may cancel. |
@@ -9536,6 +9538,21 @@ the maintainer of the entry's registry class.
 | ----- | ---- | ----- | ----------- |
 | `change_id` | [string](#string) |  |  |
 | `cancelled_by` | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="provenance-registry-v1-EventRoleChangeExpired"></a>
+
+### EventRoleChangeExpired
+EventRoleChangeExpired is emitted when an expired pending role change is removed from state.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `change_id` | [string](#string) |  |  |
 
 
 
@@ -10085,7 +10102,7 @@ SignatureRequirement defines a single signature check within an authorization pa
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| `type` | [SignatureType](#provenance-registry-v1-SignatureType) |  | type controls how the roles are evaluated (required_all, required_all_if_set, etc.). |
+| `type` | [SignatureType](#provenance-registry-v1-SignatureType) |  | type controls how the per-role results are combined (required_all, required_all_if_set, etc.). Each role is first evaluated on its own according to its assignment: an *_ANY assignment needs a signature from at least one of the role's addresses, and every other assignment needs signatures from all of them. |
 | `roles` | [RoleAssignment](#provenance-registry-v1-RoleAssignment) | repeated | roles lists the role assignments that must be checked. |
 
 

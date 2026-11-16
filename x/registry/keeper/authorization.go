@@ -160,74 +160,83 @@ func (k Keeper) resolveRoleAssignmentAddresses(ctx context.Context, entry *types
 	}
 }
 
-// evaluateSignatureRequirement checks whether a single SignatureRequirement is satisfied.
+// assignmentNeedsAnyAddress reports whether an assignment is satisfied by a signature from any one
+// of the role's resolved addresses (the *_ANY variants). Every other assignment needs a signature from
+// each resolved address; the singular ASSIGNMENT_CURRENT and ASSIGNMENT_NEW resolve at most one.
+func assignmentNeedsAnyAddress(assignment types.Assignment) bool {
+	return assignment == types.Assignment_ASSIGNMENT_CURRENT_ANY || assignment == types.Assignment_ASSIGNMENT_NEW_ANY
+}
+
+// signedRoleAddresses evaluates a role's assignment-level condition against the signers. It returns
+// the resolved addresses that signed and whether the condition is satisfied: for the *_ANY
+// assignments at least one address must have signed, otherwise every address must have signed. A
+// role that resolves to no addresses is never satisfied.
+func signedRoleAddresses(addrs []string, assignment types.Assignment, signerSet map[string]bool) ([]string, bool) {
+	var signed []string
+	for _, addr := range addrs {
+		if signerSet[addr] {
+			signed = append(signed, addr)
+		}
+	}
+	if assignmentNeedsAnyAddress(assignment) {
+		return signed, len(signed) > 0
+	}
+	return signed, len(addrs) > 0 && len(signed) == len(addrs)
+}
+
+// roleAssignmentSignedError returns nil if a role's assignment-level condition is satisfied, or an
+// error describing the missing signature(s) otherwise.
+func roleAssignmentSignedError(addrs []string, assignment types.Assignment, signerSet map[string]bool) error {
+	if _, ok := signedRoleAddresses(addrs, assignment, signerSet); ok {
+		return nil
+	}
+	if assignmentNeedsAnyAddress(assignment) {
+		return types.NewErrCodeUnauthorized(fmt.Sprintf("missing required signature from any of %q", addrs))
+	}
+	for _, addr := range addrs {
+		if !signerSet[addr] {
+			return types.NewErrCodeUnauthorized(fmt.Sprintf("missing required signature for %q", addr))
+		}
+	}
+	return types.NewErrCodeUnauthorized("required role resolved to no addresses")
+}
+
+// evaluateSignatureRequirement checks whether a single SignatureRequirement is satisfied. Each role
+// assignment is first evaluated on its own: an *_ANY assignment needs a signature from at least one
+// of the role's addresses, and every other assignment needs signatures from all of them. The
+// signature type then combines those per-role results:
 //
-//   - REQUIRED_ALL: every resolved address from every role must be in signerSet.
-//   - REQUIRED_ALL_IF_SET: for each role that resolves to non-empty addresses, all must sign;
-//     roles that resolve to empty are skipped.
-//   - REQUIRED_ANY: at least one address from any role must be in signerSet.
-//   - REQUIRED_ANY_IF_SET: same as REQUIRED_ANY but empty roles are skipped.
+//   - REQUIRED_ALL: every role must resolve to addresses and be satisfied.
+//   - REQUIRED_ALL_IF_SET: every role that resolves to addresses must be satisfied; roles that
+//     resolve to no addresses are skipped.
+//   - REQUIRED_ANY: at least one role must resolve to addresses and be satisfied.
+//   - REQUIRED_ANY_IF_SET: same as REQUIRED_ANY, but passes if no role resolves to any addresses.
 func (k Keeper) evaluateSignatureRequirement(ctx context.Context, entry *types.RegistryEntry, req *types.SignatureRequirement, newAddrs []string, signerSet map[string]bool) error {
 	if req == nil {
 		return nil
 	}
 	switch req.Type {
-	case types.SignatureType_SIGNATURE_TYPE_REQUIRED_ALL:
+	case types.SignatureType_SIGNATURE_TYPE_REQUIRED_ALL,
+		types.SignatureType_SIGNATURE_TYPE_REQUIRED_ALL_IF_SET:
 		for _, ra := range req.Roles {
 			addrs, exists, err := k.resolveRoleAssignmentAddresses(ctx, entry, ra, newAddrs)
 			if err != nil {
 				return err
 			}
 			if !exists || len(addrs) == 0 {
+				if req.Type == types.SignatureType_SIGNATURE_TYPE_REQUIRED_ALL_IF_SET {
+					continue
+				}
 				return types.NewErrCodeUnauthorized("required role resolved to no addresses")
 			}
-			for _, addr := range addrs {
-				if !signerSet[addr] {
-					return types.NewErrCodeUnauthorized(fmt.Sprintf("missing required signature for %q", addr))
-				}
-			}
-		}
-
-	case types.SignatureType_SIGNATURE_TYPE_REQUIRED_ALL_IF_SET:
-		for _, ra := range req.Roles {
-			addrs, exists, err := k.resolveRoleAssignmentAddresses(ctx, entry, ra, newAddrs)
-			if err != nil {
+			if err = roleAssignmentSignedError(addrs, ra.Assignment, signerSet); err != nil {
 				return err
 			}
-			if !exists || len(addrs) == 0 {
-				continue
-			}
-			for _, addr := range addrs {
-				if !signerSet[addr] {
-					return types.NewErrCodeUnauthorized(fmt.Sprintf("missing required signature for %q", addr))
-				}
-			}
 		}
 
-	case types.SignatureType_SIGNATURE_TYPE_REQUIRED_ANY:
-		found := false
-		for _, ra := range req.Roles {
-			addrs, _, err := k.resolveRoleAssignmentAddresses(ctx, entry, ra, newAddrs)
-			if err != nil {
-				return err
-			}
-			for _, addr := range addrs {
-				if signerSet[addr] {
-					found = true
-					break
-				}
-			}
-			if found {
-				break
-			}
-		}
-		if !found {
-			return types.NewErrCodeUnauthorized("no required signature found in any role")
-		}
-
-	case types.SignatureType_SIGNATURE_TYPE_REQUIRED_ANY_IF_SET:
+	case types.SignatureType_SIGNATURE_TYPE_REQUIRED_ANY,
+		types.SignatureType_SIGNATURE_TYPE_REQUIRED_ANY_IF_SET:
 		hasAnyRole := false
-		found := false
 		for _, ra := range req.Roles {
 			addrs, exists, err := k.resolveRoleAssignmentAddresses(ctx, entry, ra, newAddrs)
 			if err != nil {
@@ -237,19 +246,14 @@ func (k Keeper) evaluateSignatureRequirement(ctx context.Context, entry *types.R
 				continue
 			}
 			hasAnyRole = true
-			for _, addr := range addrs {
-				if signerSet[addr] {
-					found = true
-					break
-				}
-			}
-			if found {
-				break
+			if _, ok := signedRoleAddresses(addrs, ra.Assignment, signerSet); ok {
+				return nil
 			}
 		}
-		if hasAnyRole && !found {
-			return types.NewErrCodeUnauthorized("no required signature found in any role")
+		if !hasAnyRole && req.Type == types.SignatureType_SIGNATURE_TYPE_REQUIRED_ANY_IF_SET {
+			return nil
 		}
+		return types.NewErrCodeUnauthorized("no required signature found in any role")
 
 	default:
 		// Fail closed: an unspecified/unknown signature type must not be treated as satisfied.
@@ -391,29 +395,26 @@ func (k Keeper) collectAuthorizationSigners(ctx context.Context, entry *types.Re
 		switch req.Type {
 		case types.SignatureType_SIGNATURE_TYPE_REQUIRED_ALL,
 			types.SignatureType_SIGNATURE_TYPE_REQUIRED_ALL_IF_SET:
-			// In a satisfied path every resolved (set) role signed, so report all of them.
+			// In a satisfied path every resolved (set) role was satisfied, so report each of them with
+			// the addresses that signed for it.
 			for _, ra := range req.Roles {
 				name, addrs, exists, err := k.resolveRoleAssignmentSigner(ctx, entry, ra, newAddrs)
 				if err != nil || !exists || len(addrs) == 0 {
 					continue
 				}
-				signers = append(signers, types.RoleSigner{Role: name, Assignment: ra.Assignment.String(), Addresses: addrs})
+				if signed, ok := signedRoleAddresses(addrs, ra.Assignment, signerSet); ok {
+					signers = append(signers, types.RoleSigner{Role: name, Assignment: ra.Assignment.String(), Addresses: signed})
+				}
 			}
 		case types.SignatureType_SIGNATURE_TYPE_REQUIRED_ANY,
 			types.SignatureType_SIGNATURE_TYPE_REQUIRED_ANY_IF_SET:
-			// Only the role whose address actually signed contributed; report the signing subset.
+			// Only the first satisfied role contributed; report the addresses that signed for it.
 			for _, ra := range req.Roles {
 				name, addrs, exists, err := k.resolveRoleAssignmentSigner(ctx, entry, ra, newAddrs)
 				if err != nil || !exists {
 					continue
 				}
-				var signed []string
-				for _, a := range addrs {
-					if signerSet[a] {
-						signed = append(signed, a)
-					}
-				}
-				if len(signed) > 0 {
+				if signed, ok := signedRoleAddresses(addrs, ra.Assignment, signerSet); ok {
 					signers = append(signers, types.RoleSigner{Role: name, Assignment: ra.Assignment.String(), Addresses: signed})
 					break
 				}
