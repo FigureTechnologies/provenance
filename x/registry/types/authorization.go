@@ -28,6 +28,17 @@ func (r NftRole) Validate() error {
 	return nil
 }
 
+// Validate returns an error if this RegistryClassRole is not a defined enum entry, or is unspecified.
+func (r RegistryClassRole) Validate() error {
+	if err := provutils.EnumValidateExists(r, RegistryClassRole_name); err != nil {
+		return err
+	}
+	if r == RegistryClassRole_REGISTRY_CLASS_ROLE_UNSPECIFIED {
+		return fmt.Errorf("cannot be unspecified")
+	}
+	return nil
+}
+
 // Validate returns an error if this Assignment is not a defined enum entry, or is unspecified.
 func (a Assignment) Validate() error {
 	if err := provutils.EnumValidateExists(a, Assignment_name); err != nil {

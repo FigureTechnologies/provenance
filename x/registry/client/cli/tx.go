@@ -150,7 +150,11 @@ func CmdUnregisterNFT() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "unregister-nft <asset_class_id> <nft_id>",
 		Short: "Unregister an NFT",
-		Args:  cobra.ExactArgs(2),
+		Long: `Unregister an NFT, removing its entire registry entry.
+
+If the entry is associated with a registry class, the --from signer must be that class's maintainer.
+Otherwise, the signer must be the CONTROLLER if one is set, or the NFT owner if not.`,
+		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {

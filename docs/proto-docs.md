@@ -575,25 +575,50 @@
     - [GenesisState](#provenance-flatfees-v1-GenesisState)
   
 - [provenance/registry/v1/tx.proto](#provenance_registry_v1_tx-proto)
+    - [MsgApproveRoleChange](#provenance-registry-v1-MsgApproveRoleChange)
+    - [MsgApproveRoleChangeResponse](#provenance-registry-v1-MsgApproveRoleChangeResponse)
+    - [MsgAssociateRegistryClass](#provenance-registry-v1-MsgAssociateRegistryClass)
+    - [MsgAssociateRegistryClassResponse](#provenance-registry-v1-MsgAssociateRegistryClassResponse)
+    - [MsgCancelRoleChange](#provenance-registry-v1-MsgCancelRoleChange)
+    - [MsgCancelRoleChangeResponse](#provenance-registry-v1-MsgCancelRoleChangeResponse)
+    - [MsgCreateRegistryClass](#provenance-registry-v1-MsgCreateRegistryClass)
+    - [MsgCreateRegistryClassResponse](#provenance-registry-v1-MsgCreateRegistryClassResponse)
     - [MsgGrantRole](#provenance-registry-v1-MsgGrantRole)
     - [MsgGrantRoleResponse](#provenance-registry-v1-MsgGrantRoleResponse)
+    - [MsgProposeRoleChange](#provenance-registry-v1-MsgProposeRoleChange)
+    - [MsgProposeRoleChangeResponse](#provenance-registry-v1-MsgProposeRoleChangeResponse)
     - [MsgRegisterNFT](#provenance-registry-v1-MsgRegisterNFT)
     - [MsgRegisterNFTResponse](#provenance-registry-v1-MsgRegisterNFTResponse)
     - [MsgRegistryBulkUpdate](#provenance-registry-v1-MsgRegistryBulkUpdate)
     - [MsgRegistryBulkUpdateResponse](#provenance-registry-v1-MsgRegistryBulkUpdateResponse)
     - [MsgRevokeRole](#provenance-registry-v1-MsgRevokeRole)
     - [MsgRevokeRoleResponse](#provenance-registry-v1-MsgRevokeRoleResponse)
+    - [MsgSetRoles](#provenance-registry-v1-MsgSetRoles)
+    - [MsgSetRolesResponse](#provenance-registry-v1-MsgSetRolesResponse)
     - [MsgUnregisterNFT](#provenance-registry-v1-MsgUnregisterNFT)
     - [MsgUnregisterNFTResponse](#provenance-registry-v1-MsgUnregisterNFTResponse)
+    - [MsgUpdateParams](#provenance-registry-v1-MsgUpdateParams)
+    - [MsgUpdateParamsResponse](#provenance-registry-v1-MsgUpdateParamsResponse)
+    - [MsgUpdateRegistryClassRoleAuthorization](#provenance-registry-v1-MsgUpdateRegistryClassRoleAuthorization)
+    - [MsgUpdateRegistryClassRoleAuthorizationResponse](#provenance-registry-v1-MsgUpdateRegistryClassRoleAuthorizationResponse)
   
     - [Msg](#provenance-registry-v1-Msg)
   
 - [provenance/registry/v1/events.proto](#provenance_registry_v1_events-proto)
     - [EventNFTRegistered](#provenance-registry-v1-EventNFTRegistered)
     - [EventNFTUnregistered](#provenance-registry-v1-EventNFTUnregistered)
+    - [EventParamsUpdated](#provenance-registry-v1-EventParamsUpdated)
     - [EventRegistryBulkUpdated](#provenance-registry-v1-EventRegistryBulkUpdated)
+    - [EventRegistryClassCreated](#provenance-registry-v1-EventRegistryClassCreated)
+    - [EventRegistryClassUpdated](#provenance-registry-v1-EventRegistryClassUpdated)
+    - [EventRoleChangeApplied](#provenance-registry-v1-EventRoleChangeApplied)
+    - [EventRoleChangeApproved](#provenance-registry-v1-EventRoleChangeApproved)
+    - [EventRoleChangeCancelled](#provenance-registry-v1-EventRoleChangeCancelled)
+    - [EventRoleChangeProposed](#provenance-registry-v1-EventRoleChangeProposed)
     - [EventRoleGranted](#provenance-registry-v1-EventRoleGranted)
     - [EventRoleRevoked](#provenance-registry-v1-EventRoleRevoked)
+    - [EventRoleUpdated](#provenance-registry-v1-EventRoleUpdated)
+    - [RoleSigner](#provenance-registry-v1-RoleSigner)
   
 - [provenance/registry/v1/query.proto](#provenance_registry_v1_query-proto)
     - [QueryGetRegistriesRequest](#provenance-registry-v1-QueryGetRegistriesRequest)
@@ -602,18 +627,49 @@
     - [QueryGetRegistryResponse](#provenance-registry-v1-QueryGetRegistryResponse)
     - [QueryHasRoleRequest](#provenance-registry-v1-QueryHasRoleRequest)
     - [QueryHasRoleResponse](#provenance-registry-v1-QueryHasRoleResponse)
+    - [QueryParamsRequest](#provenance-registry-v1-QueryParamsRequest)
+    - [QueryParamsResponse](#provenance-registry-v1-QueryParamsResponse)
+    - [QueryPendingRoleChangeRequest](#provenance-registry-v1-QueryPendingRoleChangeRequest)
+    - [QueryPendingRoleChangeResponse](#provenance-registry-v1-QueryPendingRoleChangeResponse)
+    - [QueryPendingRoleChangesRequest](#provenance-registry-v1-QueryPendingRoleChangesRequest)
+    - [QueryPendingRoleChangesResponse](#provenance-registry-v1-QueryPendingRoleChangesResponse)
+    - [QueryRegistryClassRequest](#provenance-registry-v1-QueryRegistryClassRequest)
+    - [QueryRegistryClassResponse](#provenance-registry-v1-QueryRegistryClassResponse)
+    - [QueryRegistryClassesRequest](#provenance-registry-v1-QueryRegistryClassesRequest)
+    - [QueryRegistryClassesResponse](#provenance-registry-v1-QueryRegistryClassesResponse)
+    - [QueryValidateRoleChangeRequest](#provenance-registry-v1-QueryValidateRoleChangeRequest)
+    - [QueryValidateRoleChangeResponse](#provenance-registry-v1-QueryValidateRoleChangeResponse)
   
     - [Query](#provenance-registry-v1-Query)
+  
+- [provenance/registry/v1/authorization.proto](#provenance_registry_v1_authorization-proto)
+    - [Authorization](#provenance-registry-v1-Authorization)
+    - [RegistryClass](#provenance-registry-v1-RegistryClass)
+    - [RoleAssignment](#provenance-registry-v1-RoleAssignment)
+    - [RoleAuthorization](#provenance-registry-v1-RoleAuthorization)
+    - [RolePriority](#provenance-registry-v1-RolePriority)
+    - [RolePriorityEntry](#provenance-registry-v1-RolePriorityEntry)
+    - [SignatureRequirement](#provenance-registry-v1-SignatureRequirement)
+  
+    - [Assignment](#provenance-registry-v1-Assignment)
+    - [NftRole](#provenance-registry-v1-NftRole)
+    - [RegistryClassRole](#provenance-registry-v1-RegistryClassRole)
+    - [SignatureType](#provenance-registry-v1-SignatureType)
   
 - [provenance/registry/v1/genesis.proto](#provenance_registry_v1_genesis-proto)
     - [GenesisState](#provenance-registry-v1-GenesisState)
   
 - [provenance/registry/v1/registry.proto](#provenance_registry_v1_registry-proto)
+    - [PendingRoleChange](#provenance-registry-v1-PendingRoleChange)
     - [RegistryEntry](#provenance-registry-v1-RegistryEntry)
     - [RegistryKey](#provenance-registry-v1-RegistryKey)
+    - [RoleUpdate](#provenance-registry-v1-RoleUpdate)
     - [RolesEntry](#provenance-registry-v1-RolesEntry)
   
     - [RegistryRole](#provenance-registry-v1-RegistryRole)
+  
+- [provenance/registry/v1/params.proto](#provenance_registry_v1_params-proto)
+    - [Params](#provenance-registry-v1-Params)
   
 - [provenance/ibchooks/v1/tx.proto](#provenance_ibchooks_v1_tx-proto)
     - [MsgEmitIBCAck](#provenance-ibchooks-v1-MsgEmitIBCAck)
@@ -8916,6 +8972,129 @@ GenesisState contains a set of the flat fees module data, persisted from the sto
 
 
 
+<a name="provenance-registry-v1-MsgApproveRoleChange"></a>
+
+### MsgApproveRoleChange
+MsgApproveRoleChange records a single-signer approval for an open pending role change.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `signer` | [string](#string) |  | signer is the approving party. Single-signer, so it can be delegated via authz. |
+| `change_id` | [string](#string) |  | change_id is the identifier of the pending change to approve. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-MsgApproveRoleChangeResponse"></a>
+
+### MsgApproveRoleChangeResponse
+MsgApproveRoleChangeResponse defines the response for ApproveRoleChange.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `applied` | [bool](#bool) |  | applied is true if this approval satisfied the policy and the change was applied. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-MsgAssociateRegistryClass"></a>
+
+### MsgAssociateRegistryClass
+MsgAssociateRegistryClass associates or updates the registry class for an existing registry
+entry without modifying any roles. This is the upgrade path from legacy (no-class) registration
+to class-governed authorization.
+
+Authorization: the signer must satisfy at least one of the following — neither takes precedence:
+  - CONTROLLER: the signer is one of the entry's CONTROLLER role addresses.
+  - Scope data owner: if the NFT is a Provenance Metadata Scope, the signer is one of the
+    scope's data-owner parties.
+  - NFT owner: for all other NFTs, the signer owns the NFT.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `signer` | [string](#string) |  | signer is the address authorizing this association. |
+| `key` | [RegistryKey](#provenance-registry-v1-RegistryKey) |  | key identifies the existing registry entry to update. |
+| `registry_class_id` | [string](#string) |  | registry_class_id is the ID of the registry class to associate. Must be non-empty; the referenced class must exist and its asset_class_id must match the entry's asset_class_id. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-MsgAssociateRegistryClassResponse"></a>
+
+### MsgAssociateRegistryClassResponse
+MsgAssociateRegistryClassResponse defines the response for AssociateRegistryClass.
+
+
+
+
+
+
+<a name="provenance-registry-v1-MsgCancelRoleChange"></a>
+
+### MsgCancelRoleChange
+MsgCancelRoleChange cancels an open pending role change.
+The original proposer or the maintainer of the entry's registry class may cancel.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `signer` | [string](#string) |  | signer must be the original proposer of the pending change, or the maintainer of the registry class associated with the change's registry entry. |
+| `change_id` | [string](#string) |  | change_id is the identifier of the pending change to cancel. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-MsgCancelRoleChangeResponse"></a>
+
+### MsgCancelRoleChangeResponse
+MsgCancelRoleChangeResponse defines the response for CancelRoleChange.
+
+
+
+
+
+
+<a name="provenance-registry-v1-MsgCreateRegistryClass"></a>
+
+### MsgCreateRegistryClass
+MsgCreateRegistryClass creates a new registry class defining asset class-level authorization
+rules for role updates within an NFT collection.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `signer` | [string](#string) |  | signer must match the maintainer address. |
+| `registry_class_id` | [string](#string) |  | registry_class_id is the unique identifier for the registry class. Must be unique across all registry classes. |
+| `asset_class_id` | [string](#string) |  | asset_class_id is the Scope Specification ID or NFT Class ID this registry class governs. |
+| `maintainer` | [string](#string) |  | maintainer is the address authorized to manage this registry class. It is permanent and cannot be changed after creation. |
+| `role_authorizations` | [RoleAuthorization](#provenance-registry-v1-RoleAuthorization) | repeated | role_authorizations are the initial authorization rules for this asset class. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-MsgCreateRegistryClassResponse"></a>
+
+### MsgCreateRegistryClassResponse
+MsgCreateRegistryClassResponse defines the response for CreateRegistryClass.
+
+
+
+
+
+
 <a name="provenance-registry-v1-MsgGrantRole"></a>
 
 ### MsgGrantRole
@@ -8925,7 +9104,7 @@ This message adds the specified addresses to an existing role for the given regi
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| `signer` | [string](#string) |  | signer is the address that is authorized to grant the role. This address must have the appropriate permissions to modify role assignments. |
+| `signer` | [string](#string) |  | signer is the address authorizing the role grant. The signer must satisfy the role's authorization policy on its own (e.g. the NFT owner for roles without a policy). Multi-party role changes are made through ProposeRoleChange / ApproveRoleChange instead. |
 | `key` | [RegistryKey](#provenance-registry-v1-RegistryKey) |  | key is the registry key to grant the role to. This identifies the specific registry entry to modify. |
 | `role` | [RegistryRole](#provenance-registry-v1-RegistryRole) |  | role is the role to grant. This specifies which role type is being assigned to the addresses. |
 | `addresses` | [string](#string) | repeated | addresses is the list of addresses to grant the role to. These addresses will be added to the specified role for the registry key. |
@@ -8946,6 +9125,42 @@ This is an empty response indicating successful role grant.
 
 
 
+<a name="provenance-registry-v1-MsgProposeRoleChange"></a>
+
+### MsgProposeRoleChange
+MsgProposeRoleChange opens a pending role change that collects single-signer approvals until
+every affected role's authorization policy is satisfied, then applies the whole batch
+atomically. Its payload mirrors MsgSetRoles (desired-state, multi-role), but using single-signer
+messages (rather than one multi-signer message) keeps every step compatible with authz delegation.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `signer` | [string](#string) |  | signer is the address proposing the change. It is recorded as the first approval; it only counts toward a policy if the signer is itself a required party. |
+| `key` | [RegistryKey](#provenance-registry-v1-RegistryKey) |  | key identifies the registry entry to change. |
+| `role_updates` | [RoleUpdate](#provenance-registry-v1-RoleUpdate) | repeated | role_updates contains the desired state for each role to set when the change is applied. At least one entry is required. Roles not listed here are unchanged. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-MsgProposeRoleChangeResponse"></a>
+
+### MsgProposeRoleChangeResponse
+MsgProposeRoleChangeResponse defines the response for ProposeRoleChange.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `change_id` | [string](#string) |  | change_id is the deterministic identifier of the pending change. It is also returned when the change auto-applied immediately (e.g. a single-party policy satisfied by the proposer). |
+| `applied` | [bool](#bool) |  | applied is true if the proposal alone satisfied the policy and the change was applied. |
+
+
+
+
+
+
 <a name="provenance-registry-v1-MsgRegisterNFT"></a>
 
 ### MsgRegisterNFT
@@ -8958,6 +9173,7 @@ This message creates a new registry entry with the specified roles and addresses
 | `signer` | [string](#string) |  | signer is the address that is authorized to register NFTs. This address must have the appropriate permissions to create registry entries. |
 | `key` | [RegistryKey](#provenance-registry-v1-RegistryKey) |  | key is the registry key to register. This contains the NFT ID and asset class ID that uniquely identify the registry entry. |
 | `roles` | [RolesEntry](#provenance-registry-v1-RolesEntry) | repeated | roles is a list of roles and addresses that can perform that role. Each role entry defines a role type and the addresses authorized for that role. |
+| `registry_class_id` | [string](#string) |  | registry_class_id optionally associates the new registry entry with a registry class whose authorization rules govern subsequent role updates. If set, the referenced class must exist. |
 
 
 
@@ -9012,7 +9228,7 @@ This message removes the specified addresses from an existing role for the given
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| `signer` | [string](#string) |  | signer is the address that is authorized to revoke the role. This address must have the appropriate permissions to modify role assignments. |
+| `signer` | [string](#string) |  | signer is the address authorizing the role revocation. The signer must satisfy the role's authorization policy on its own (e.g. the NFT owner for roles without a policy). Multi-party role changes are made through ProposeRoleChange / ApproveRoleChange instead. |
 | `key` | [RegistryKey](#provenance-registry-v1-RegistryKey) |  | key is the registry key to revoke the role from. This identifies the specific registry entry to modify. |
 | `role` | [RegistryRole](#provenance-registry-v1-RegistryRole) |  | role is the role to revoke. This specifies which role type is being removed from the addresses. |
 | `addresses` | [string](#string) | repeated | addresses is the list of addresses to revoke the role from. These addresses will be removed from the specified role for the registry key. |
@@ -9033,6 +9249,36 @@ This is an empty response indicating successful role revocation.
 
 
 
+<a name="provenance-registry-v1-MsgSetRoles"></a>
+
+### MsgSetRoles
+MsgSetRoles atomically sets the desired state for one or more roles on a registry entry.
+For each role in role_updates, the keeper computes the diff between current and desired
+addresses and applies grants and revokes to reach the desired state.
+All updates succeed or all fail (atomic).
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `signer` | [string](#string) |  | signer is the address authorizing the role updates. The signer must satisfy each affected role's authorization policy on its own. Multi-party role changes are made through ProposeRoleChange / ApproveRoleChange instead. |
+| `key` | [RegistryKey](#provenance-registry-v1-RegistryKey) |  | key identifies the registry entry to update. |
+| `role_updates` | [RoleUpdate](#provenance-registry-v1-RoleUpdate) | repeated | role_updates contains the desired state for each role to update. At least one entry is required. Roles not listed here are unchanged. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-MsgSetRolesResponse"></a>
+
+### MsgSetRolesResponse
+MsgSetRolesResponse defines the response for SetRoles.
+
+
+
+
+
+
 <a name="provenance-registry-v1-MsgUnregisterNFT"></a>
 
 ### MsgUnregisterNFT
@@ -9042,7 +9288,7 @@ This message removes the entire registry entry for the specified key.
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| `signer` | [string](#string) |  | signer is the address that is authorized to unregister NFTs. This address must have the appropriate permissions to remove registry entries. |
+| `signer` | [string](#string) |  | signer is the address authorizing the removal. If the entry is associated with a registry class, the signer must be that class's maintainer. Otherwise, the signer must be the CONTROLLER if one is set, or the NFT owner if not. |
 | `key` | [RegistryKey](#provenance-registry-v1-RegistryKey) |  | key is the registry key to remove. This identifies the specific registry entry to delete. |
 
 
@@ -9055,6 +9301,61 @@ This message removes the entire registry entry for the specified key.
 ### MsgUnregisterNFTResponse
 MsgUnregisterNFTResponse defines the response for UnregisterNFT.
 This is an empty response indicating successful unregistration.
+
+
+
+
+
+
+<a name="provenance-registry-v1-MsgUpdateParams"></a>
+
+### MsgUpdateParams
+MsgUpdateParams is a request to update the registry module's params.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `authority` | [string](#string) |  | authority should be the governance module account address. |
+| `params` | [Params](#provenance-registry-v1-Params) |  | params are the new registry module params to set. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-MsgUpdateParamsResponse"></a>
+
+### MsgUpdateParamsResponse
+MsgUpdateParamsResponse defines the response for UpdateParams.
+
+
+
+
+
+
+<a name="provenance-registry-v1-MsgUpdateRegistryClassRoleAuthorization"></a>
+
+### MsgUpdateRegistryClassRoleAuthorization
+MsgUpdateRegistryClassRoleAuthorization replaces the authorization rules for an existing
+registry class. The new rules completely replace the existing rules (not a merge).
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `signer` | [string](#string) |  | signer must be the current maintainer address. |
+| `registry_class_id` | [string](#string) |  | registry_class_id identifies the registry class to update. |
+| `role_authorizations` | [RoleAuthorization](#provenance-registry-v1-RoleAuthorization) | repeated | role_authorizations are the updated authorization rules (replaces existing rules). |
+
+
+
+
+
+
+<a name="provenance-registry-v1-MsgUpdateRegistryClassRoleAuthorizationResponse"></a>
+
+### MsgUpdateRegistryClassRoleAuthorizationResponse
+MsgUpdateRegistryClassRoleAuthorizationResponse defines the response for
+UpdateRegistryClassRoleAuthorization.
 
 
 
@@ -9076,10 +9377,18 @@ This service provides transaction functionality for managing registry entries an
 | Method Name | Request Type | Response Type | Description |
 | ----------- | ------------ | ------------- | ------------|
 | `RegisterNFT` | [MsgRegisterNFT](#provenance-registry-v1-MsgRegisterNFT) | [MsgRegisterNFTResponse](#provenance-registry-v1-MsgRegisterNFTResponse) | RegisterNFT registers a new NFT in the registry. This creates a new registry entry with the specified roles and addresses. |
-| `GrantRole` | [MsgGrantRole](#provenance-registry-v1-MsgGrantRole) | [MsgGrantRoleResponse](#provenance-registry-v1-MsgGrantRoleResponse) | GrantRole grants a role to one or more addresses. This adds the specified addresses to the role for the given registry key. |
-| `RevokeRole` | [MsgRevokeRole](#provenance-registry-v1-MsgRevokeRole) | [MsgRevokeRoleResponse](#provenance-registry-v1-MsgRevokeRoleResponse) | RevokeRole revokes a role from one or more addresses. This removes the specified addresses from the role for the given registry key. |
-| `UnregisterNFT` | [MsgUnregisterNFT](#provenance-registry-v1-MsgUnregisterNFT) | [MsgUnregisterNFTResponse](#provenance-registry-v1-MsgUnregisterNFTResponse) | UnregisterNFT unregisters an NFT from the registry. This removes the entire registry entry for the specified key. |
+| `GrantRole` | [MsgGrantRole](#provenance-registry-v1-MsgGrantRole) | [MsgGrantRoleResponse](#provenance-registry-v1-MsgGrantRoleResponse) | GrantRole grants a role to one or more addresses. This adds the specified addresses to the role for the given registry key. The single signer must satisfy the role's authorization policy directly; multi-party role changes are made through ProposeRoleChange / ApproveRoleChange. |
+| `RevokeRole` | [MsgRevokeRole](#provenance-registry-v1-MsgRevokeRole) | [MsgRevokeRoleResponse](#provenance-registry-v1-MsgRevokeRoleResponse) | RevokeRole revokes a role from one or more addresses. This removes the specified addresses from the role for the given registry key. The single signer must satisfy the role's authorization policy directly; multi-party role changes are made through ProposeRoleChange / ApproveRoleChange. |
+| `UnregisterNFT` | [MsgUnregisterNFT](#provenance-registry-v1-MsgUnregisterNFT) | [MsgUnregisterNFTResponse](#provenance-registry-v1-MsgUnregisterNFTResponse) | UnregisterNFT unregisters an NFT from the registry. This removes the entire registry entry for the specified key. If the entry is associated with a registry class, only the registry class maintainer may sign. Otherwise, the CONTROLLER must sign if one is set, or the NFT owner if not. |
 | `RegistryBulkUpdate` | [MsgRegistryBulkUpdate](#provenance-registry-v1-MsgRegistryBulkUpdate) | [MsgRegistryBulkUpdateResponse](#provenance-registry-v1-MsgRegistryBulkUpdateResponse) | RegistryBulkUpdate registers, or updates, multiple NFTs in the registry. This creates multiple registry entries, or updates if one exists. Each registry in this will cost one MsgRegisterNFT. |
+| `SetRoles` | [MsgSetRoles](#provenance-registry-v1-MsgSetRoles) | [MsgSetRolesResponse](#provenance-registry-v1-MsgSetRolesResponse) | SetRoles atomically sets the desired state for one or more roles on a registry entry. The single signer must satisfy each affected role's authorization policy directly; multi-party role changes are made through ProposeRoleChange / ApproveRoleChange. |
+| `ProposeRoleChange` | [MsgProposeRoleChange](#provenance-registry-v1-MsgProposeRoleChange) | [MsgProposeRoleChangeResponse](#provenance-registry-v1-MsgProposeRoleChangeResponse) | ProposeRoleChange opens a pending role change that accumulates single-signer approvals. The change auto-applies once the role's authorization policy is satisfied. |
+| `ApproveRoleChange` | [MsgApproveRoleChange](#provenance-registry-v1-MsgApproveRoleChange) | [MsgApproveRoleChangeResponse](#provenance-registry-v1-MsgApproveRoleChangeResponse) | ApproveRoleChange records a single-signer approval for an open pending role change. When the accumulated approvals satisfy the role's policy, the change is applied automatically. |
+| `CreateRegistryClass` | [MsgCreateRegistryClass](#provenance-registry-v1-MsgCreateRegistryClass) | [MsgCreateRegistryClassResponse](#provenance-registry-v1-MsgCreateRegistryClassResponse) | CreateRegistryClass creates a new registry class that defines asset class-level authorization rules for role updates. The signer must match the maintainer address. |
+| `UpdateRegistryClassRoleAuthorization` | [MsgUpdateRegistryClassRoleAuthorization](#provenance-registry-v1-MsgUpdateRegistryClassRoleAuthorization) | [MsgUpdateRegistryClassRoleAuthorizationResponse](#provenance-registry-v1-MsgUpdateRegistryClassRoleAuthorizationResponse) | UpdateRegistryClassRoleAuthorization replaces the authorization rules for an existing registry class. Only the current maintainer may update the rules. |
+| `CancelRoleChange` | [MsgCancelRoleChange](#provenance-registry-v1-MsgCancelRoleChange) | [MsgCancelRoleChangeResponse](#provenance-registry-v1-MsgCancelRoleChangeResponse) | CancelRoleChange cancels an open pending role change. The original proposer or the maintainer of the entry's registry class may cancel. |
+| `AssociateRegistryClass` | [MsgAssociateRegistryClass](#provenance-registry-v1-MsgAssociateRegistryClass) | [MsgAssociateRegistryClassResponse](#provenance-registry-v1-MsgAssociateRegistryClassResponse) | AssociateRegistryClass associates or updates the registry class for an existing registry entry without modifying any roles. The signer must be the CONTROLLER if one is set, or the scope data owner if the NFT is a Provenance Metadata Scope, or the NFT owner otherwise. |
+| `UpdateParams` | [MsgUpdateParams](#provenance-registry-v1-MsgUpdateParams) | [MsgUpdateParamsResponse](#provenance-registry-v1-MsgUpdateParamsResponse) | UpdateParams is a governance proposal endpoint for updating the registry module's params, including the default role authorization policies. The authority must be the governance module account address. |
 
  <!-- end services -->
 
@@ -9124,6 +9433,16 @@ EventNFTUnregistered is the event emitted when a registry is deleted from an NFT
 
 
 
+<a name="provenance-registry-v1-EventParamsUpdated"></a>
+
+### EventParamsUpdated
+EventParamsUpdated is emitted when the registry module's params are updated via governance.
+
+
+
+
+
+
 <a name="provenance-registry-v1-EventRegistryBulkUpdated"></a>
 
 ### EventRegistryBulkUpdated
@@ -9134,6 +9453,107 @@ EventRegistryBulkUpdated is the event emitted to indicate that a registry has be
 | ----- | ---- | ----- | ----------- |
 | `nft_id` | [string](#string) |  |  |
 | `asset_class_id` | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="provenance-registry-v1-EventRegistryClassCreated"></a>
+
+### EventRegistryClassCreated
+EventRegistryClassCreated is emitted when a registry class is created.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `registry_class_id` | [string](#string) |  |  |
+| `asset_class_id` | [string](#string) |  |  |
+| `maintainer` | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="provenance-registry-v1-EventRegistryClassUpdated"></a>
+
+### EventRegistryClassUpdated
+EventRegistryClassUpdated is emitted when a registry class's authorization rules are updated.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `registry_class_id` | [string](#string) |  |  |
+| `maintainer` | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="provenance-registry-v1-EventRoleChangeApplied"></a>
+
+### EventRoleChangeApplied
+EventRoleChangeApplied is emitted when a pending role change accumulates enough approvals and is applied.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `nft_id` | [string](#string) |  |  |
+| `asset_class_id` | [string](#string) |  |  |
+| `change_id` | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="provenance-registry-v1-EventRoleChangeApproved"></a>
+
+### EventRoleChangeApproved
+EventRoleChangeApproved is emitted when a party records an approval for a pending role change.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `change_id` | [string](#string) |  |  |
+| `approver` | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="provenance-registry-v1-EventRoleChangeCancelled"></a>
+
+### EventRoleChangeCancelled
+EventRoleChangeCancelled is emitted when a pending role change is cancelled by its proposer or by
+the maintainer of the entry's registry class.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `change_id` | [string](#string) |  |  |
+| `cancelled_by` | [string](#string) |  |  |
+
+
+
+
+
+
+<a name="provenance-registry-v1-EventRoleChangeProposed"></a>
+
+### EventRoleChangeProposed
+EventRoleChangeProposed is emitted when a pending role change is opened.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `nft_id` | [string](#string) |  |  |
+| `asset_class_id` | [string](#string) |  |  |
+| `change_id` | [string](#string) |  |  |
+| `proposer` | [string](#string) |  |  |
 
 
 
@@ -9170,6 +9590,47 @@ EventRoleRevoked is the event emitted when an address has a role revoked in a re
 | `asset_class_id` | [string](#string) |  |  |
 | `role` | [string](#string) |  |  |
 | `addresses` | [string](#string) | repeated |  |
+
+
+
+
+
+
+<a name="provenance-registry-v1-EventRoleUpdated"></a>
+
+### EventRoleUpdated
+EventRoleUpdated is the comprehensive event emitted whenever a role is granted, revoked, or set
+for a registered NFT. It is emitted for MsgGrantRole, MsgRevokeRole, and once per updated role
+for MsgSetRoles (including changes applied via the propose/approve accumulation flow).
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `nft_id` | [string](#string) |  | nft_id is the ID of the NFT for which the role was updated. |
+| `asset_class_id` | [string](#string) |  | asset_class_id is the ID of the asset class the NFT belongs to. |
+| `registry_class_id` | [string](#string) |  | registry_class_id is the registry class governing this NFT (empty if none). |
+| `role` | [string](#string) |  | role is the role that was updated. |
+| `addresses` | [string](#string) | repeated | addresses are the addresses assigned to the role after this operation (empty if cleared). |
+| `previous_addresses` | [string](#string) | repeated | previous_addresses are the addresses assigned to the role before this operation. |
+| `signers` | [RoleSigner](#provenance-registry-v1-RoleSigner) | repeated | signers describes the roles/addresses that authorized this change. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-RoleSigner"></a>
+
+### RoleSigner
+RoleSigner describes a role/assignment whose resolved addresses contributed a signature toward
+authorizing a role change. It is the structured form of an entry in EventRoleUpdated.signers.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `role` | [string](#string) |  | role is the (registry, NFT, or registry class) role whose holders provided the signature(s). |
+| `assignment` | [string](#string) |  | assignment is the assignment variant the role was resolved under (e.g. ASSIGNMENT_CURRENT). |
+| `addresses` | [string](#string) | repeated | addresses are the resolved addresses for the role that signed to authorize the change. |
 
 
 
@@ -9290,6 +9751,191 @@ It provides a boolean result indicating whether the address has the specified ro
 
 
 
+
+<a name="provenance-registry-v1-QueryParamsRequest"></a>
+
+### QueryParamsRequest
+QueryParamsRequest is the request type for the Query/Params RPC method.
+
+
+
+
+
+
+<a name="provenance-registry-v1-QueryParamsResponse"></a>
+
+### QueryParamsResponse
+QueryParamsResponse is the response type for the Query/Params RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `params` | [Params](#provenance-registry-v1-Params) |  | params are the current registry module parameters. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-QueryPendingRoleChangeRequest"></a>
+
+### QueryPendingRoleChangeRequest
+QueryPendingRoleChangeRequest is the request type for the Query/PendingRoleChange RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `id` | [string](#string) |  | id is the deterministic identifier of the pending role change to retrieve. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-QueryPendingRoleChangeResponse"></a>
+
+### QueryPendingRoleChangeResponse
+QueryPendingRoleChangeResponse is the response type for the Query/PendingRoleChange RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `pending_role_change` | [PendingRoleChange](#provenance-registry-v1-PendingRoleChange) |  | pending_role_change is the pending role change for the requested id. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-QueryPendingRoleChangesRequest"></a>
+
+### QueryPendingRoleChangesRequest
+QueryPendingRoleChangesRequest is the paginated request type for the Query/PendingRoleChanges
+RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `key` | [RegistryKey](#provenance-registry-v1-RegistryKey) |  | key optionally filters the results to a single registry entry. When unset, all pending role changes are returned. |
+| `pagination` | [cosmos.base.query.v1beta1.PageRequest](#cosmos-base-query-v1beta1-PageRequest) |  | pagination defines an optional pagination for the request. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-QueryPendingRoleChangesResponse"></a>
+
+### QueryPendingRoleChangesResponse
+QueryPendingRoleChangesResponse is the paginated response type for the Query/PendingRoleChanges
+RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `pending_role_changes` | [PendingRoleChange](#provenance-registry-v1-PendingRoleChange) | repeated | pending_role_changes is the collection of pending role changes. |
+| `pagination` | [cosmos.base.query.v1beta1.PageResponse](#cosmos-base-query-v1beta1-PageResponse) |  | pagination is the pagination details for this response. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-QueryRegistryClassRequest"></a>
+
+### QueryRegistryClassRequest
+QueryRegistryClassRequest is the request type for the Query/RegistryClass RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `registry_class_id` | [string](#string) |  | registry_class_id is the unique identifier of the registry class to retrieve. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-QueryRegistryClassResponse"></a>
+
+### QueryRegistryClassResponse
+QueryRegistryClassResponse is the response type for the Query/RegistryClass RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `registry_class` | [RegistryClass](#provenance-registry-v1-RegistryClass) |  | registry_class is the registry class for the requested id, including its authorization policy. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-QueryRegistryClassesRequest"></a>
+
+### QueryRegistryClassesRequest
+QueryRegistryClassesRequest is the paginated request type for the Query/RegistryClasses RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `pagination` | [cosmos.base.query.v1beta1.PageRequest](#cosmos-base-query-v1beta1-PageRequest) |  | pagination defines an optional pagination for the request. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-QueryRegistryClassesResponse"></a>
+
+### QueryRegistryClassesResponse
+QueryRegistryClassesResponse is the paginated response type for the Query/RegistryClasses RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `registry_classes` | [RegistryClass](#provenance-registry-v1-RegistryClass) | repeated | registry_classes is the collection of registry classes. |
+| `pagination` | [cosmos.base.query.v1beta1.PageResponse](#cosmos-base-query-v1beta1-PageResponse) |  | pagination is the pagination details for this response. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-QueryValidateRoleChangeRequest"></a>
+
+### QueryValidateRoleChangeRequest
+QueryValidateRoleChangeRequest is the request type for the Query/ValidateRoleChange RPC method.
+It describes a candidate role-change batch and the set of approvers to test against each affected
+role's authorization policy.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `key` | [RegistryKey](#provenance-registry-v1-RegistryKey) |  | key identifies the registry entry the role change targets. |
+| `role_updates` | [RoleUpdate](#provenance-registry-v1-RoleUpdate) | repeated | role_updates is the desired-state batch to evaluate (same shape as MsgSetRoles). |
+| `approvers` | [string](#string) | repeated | approvers is the accumulated/candidate set of approver addresses to test. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-QueryValidateRoleChangeResponse"></a>
+
+### QueryValidateRoleChangeResponse
+QueryValidateRoleChangeResponse is the response type for the Query/ValidateRoleChange RPC method.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `error` | [string](#string) |  | error contains the authorization failure explanation. It is empty when the change is authorized. |
+| `authorized` | [bool](#bool) |  | authorized is true if the supplied approvers satisfy every affected role's policy. |
+
+
+
+
+
  <!-- end messages -->
 
  <!-- end enums -->
@@ -9308,6 +9954,209 @@ This service provides read-only access to registry data and role verification.
 | `GetRegistry` | [QueryGetRegistryRequest](#provenance-registry-v1-QueryGetRegistryRequest) | [QueryGetRegistryResponse](#provenance-registry-v1-QueryGetRegistryResponse) | GetRegistry returns the registry entry for a given key. This method retrieves the complete registry entry including all roles and addresses. |
 | `GetRegistries` | [QueryGetRegistriesRequest](#provenance-registry-v1-QueryGetRegistriesRequest) | [QueryGetRegistriesResponse](#provenance-registry-v1-QueryGetRegistriesResponse) | GetRegistries returns all registry entries, optionally filtered by asset class ID. This method retrieves the complete registry entries including all roles and addresses. |
 | `HasRole` | [QueryHasRoleRequest](#provenance-registry-v1-QueryHasRoleRequest) | [QueryHasRoleResponse](#provenance-registry-v1-QueryHasRoleResponse) | HasRole returns true if the address has the specified role for the given key. |
+| `PendingRoleChange` | [QueryPendingRoleChangeRequest](#provenance-registry-v1-QueryPendingRoleChangeRequest) | [QueryPendingRoleChangeResponse](#provenance-registry-v1-QueryPendingRoleChangeResponse) | PendingRoleChange returns a single pending role change by its id. |
+| `PendingRoleChanges` | [QueryPendingRoleChangesRequest](#provenance-registry-v1-QueryPendingRoleChangesRequest) | [QueryPendingRoleChangesResponse](#provenance-registry-v1-QueryPendingRoleChangesResponse) | PendingRoleChanges returns the pending role changes, optionally filtered by registry key. |
+| `RegistryClass` | [QueryRegistryClassRequest](#provenance-registry-v1-QueryRegistryClassRequest) | [QueryRegistryClassResponse](#provenance-registry-v1-QueryRegistryClassResponse) | RegistryClass returns a single registry class (including its authorization policy) by id. |
+| `RegistryClasses` | [QueryRegistryClassesRequest](#provenance-registry-v1-QueryRegistryClassesRequest) | [QueryRegistryClassesResponse](#provenance-registry-v1-QueryRegistryClassesResponse) | RegistryClasses returns all registry classes. |
+| `Params` | [QueryParamsRequest](#provenance-registry-v1-QueryParamsRequest) | [QueryParamsResponse](#provenance-registry-v1-QueryParamsResponse) | Params returns the registry module parameters, including the default role authorization policies. |
+| `ValidateRoleChange` | [QueryValidateRoleChangeRequest](#provenance-registry-v1-QueryValidateRoleChangeRequest) | [QueryValidateRoleChangeResponse](#provenance-registry-v1-QueryValidateRoleChangeResponse) | ValidateRoleChange performs a read-only dry-run of a role-change batch, reporting whether the supplied approvers would satisfy every affected role's authorization policy without writing any state. |
+
+ <!-- end services -->
+
+
+
+<a name="provenance_registry_v1_authorization-proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## provenance/registry/v1/authorization.proto
+
+
+
+<a name="provenance-registry-v1-Authorization"></a>
+
+### Authorization
+Authorization defines one complete approval path for a role update.
+All signature requirements in this authorization must be satisfied for this path to succeed.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `description` | [string](#string) |  | description is a human-readable explanation of this authorization path. |
+| `signatures` | [SignatureRequirement](#provenance-registry-v1-SignatureRequirement) | repeated | signatures is the ordered list of signature requirements that must all be satisfied. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-RegistryClass"></a>
+
+### RegistryClass
+RegistryClass provides asset class-level authorization over role updates.
+It defines authorization rules for an entire NFT collection (asset class), allowing the
+maintainer to establish custom role update policies without requiring governance proposals.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `registry_class_id` | [string](#string) |  | registry_class_id is the unique identifier for this registry class (e.g. "loan-registry-v1"). It is required since NFT classes do not have an inherent owner, and must be unique across all registry classes. |
+| `asset_class_id` | [string](#string) |  | asset_class_id is the Scope Specification ID or NFT Class ID this registry class governs. |
+| `maintainer` | [string](#string) |  | maintainer is the address authorized to manage this registry class. It is permanent and cannot be changed once set. |
+| `role_authorizations` | [RoleAuthorization](#provenance-registry-v1-RoleAuthorization) | repeated | role_authorizations are the authorization rules for role updates within this asset class. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-RoleAssignment"></a>
+
+### RoleAssignment
+RoleAssignment specifies which role and which assignment type to resolve for a signature check.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `registry_role` | [RegistryRole](#provenance-registry-v1-RegistryRole) |  | registry_role is a role managed within the registry module state. Can be used with any assignment type. |
+| `nft_role` | [NftRole](#provenance-registry-v1-NftRole) |  | nft_role is a role managed by another module (e.g., NFT_ROLE_NFT_OWNER from metadata). Can only be used with ASSIGNMENT_CURRENT* variants. |
+| `role_priority` | [RolePriority](#provenance-registry-v1-RolePriority) |  | role_priority is an ordered list of roles; the first one that exists is used. |
+| `registry_class_role` | [RegistryClassRole](#provenance-registry-v1-RegistryClassRole) |  | registry_class_role is a role defined by the entry's registry class (e.g. REGISTRY_CLASS_ROLE_MAINTAINER). Can only be used with ASSIGNMENT_CURRENT* variants, and only in registry class role authorizations (not in the module params defaults). |
+| `assignment` | [Assignment](#provenance-registry-v1-Assignment) |  | assignment specifies which address(es) to resolve for the role. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-RoleAuthorization"></a>
+
+### RoleAuthorization
+RoleAuthorization configures who must sign to update a specific role.
+Contains one or more Authorization paths; the update is approved if ANY path is fully satisfied.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `role` | [RegistryRole](#provenance-registry-v1-RegistryRole) |  | role is the registry role whose assignments are being controlled. |
+| `authorizations` | [Authorization](#provenance-registry-v1-Authorization) | repeated | authorizations is a list of alternative approval paths. The role update is approved if any single authorization is fully satisfied. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-RolePriority"></a>
+
+### RolePriority
+RolePriority is an ordered list of role entries used for fallback/hierarchical authority.
+The keeper uses the first role in the list that exists.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `entries` | [RolePriorityEntry](#provenance-registry-v1-RolePriorityEntry) | repeated | entries is the ordered list of roles to check. The first existing role is used. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-RolePriorityEntry"></a>
+
+### RolePriorityEntry
+RolePriorityEntry is a single entry in a RolePriority list.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `registry_role` | [RegistryRole](#provenance-registry-v1-RegistryRole) |  | registry_role is a role managed within the registry module state. |
+| `nft_role` | [NftRole](#provenance-registry-v1-NftRole) |  | nft_role is a role managed by another module. |
+
+
+
+
+
+
+<a name="provenance-registry-v1-SignatureRequirement"></a>
+
+### SignatureRequirement
+SignatureRequirement defines a single signature check within an authorization path.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `type` | [SignatureType](#provenance-registry-v1-SignatureType) |  | type controls how the roles are evaluated (required_all, required_all_if_set, etc.). |
+| `roles` | [RoleAssignment](#provenance-registry-v1-RoleAssignment) | repeated | roles lists the role assignments that must be checked. |
+
+
+
+
+
+ <!-- end messages -->
+
+
+<a name="provenance-registry-v1-Assignment"></a>
+
+### Assignment
+Assignment describes which address(es) to resolve for a role in an authorization check.
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| `ASSIGNMENT_UNSPECIFIED` | `0` | ASSIGNMENT_UNSPECIFIED is the default/unset value. |
+| `ASSIGNMENT_CURRENT` | `1` | ASSIGNMENT_CURRENT resolves exactly one address currently assigned to the role. Fails if the role has multiple addresses assigned. |
+| `ASSIGNMENT_CURRENT_ALL` | `2` | ASSIGNMENT_CURRENT_ALL resolves all addresses currently assigned to the role. All of them must sign. |
+| `ASSIGNMENT_CURRENT_ANY` | `3` | ASSIGNMENT_CURRENT_ANY resolves any one of the addresses currently assigned to the role. At least one must sign. |
+| `ASSIGNMENT_NEW` | `4` | ASSIGNMENT_NEW resolves exactly one new address being assigned to the role. Fails if multiple new addresses are provided. Invalid for NftRole (read-only from registry perspective). |
+| `ASSIGNMENT_NEW_ANY` | `5` | ASSIGNMENT_NEW_ANY resolves any one of the new addresses being assigned to the role. Invalid for NftRole. |
+| `ASSIGNMENT_NEW_ALL` | `6` | ASSIGNMENT_NEW_ALL resolves all new addresses being assigned to the role. All of them must sign. Invalid for NftRole. |
+
+
+
+<a name="provenance-registry-v1-NftRole"></a>
+
+### NftRole
+NftRole identifies roles managed outside the registry module (e.g., by the metadata module).
+These roles are read-only from the registry module's perspective.
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| `NFT_ROLE_UNSPECIFIED` | `0` | NFT_ROLE_UNSPECIFIED is the default/unset value. |
+| `NFT_ROLE_NFT_OWNER` | `1` | NFT_ROLE_NFT_OWNER is the owner of the NFT. For metadata-scope NFTs, this is the scope value owner; otherwise it's the owner from the x/nft module. |
+
+
+
+<a name="provenance-registry-v1-RegistryClassRole"></a>
+
+### RegistryClassRole
+RegistryClassRole identifies roles defined by the registry class associated with a registry entry.
+These roles are read-only from the perspective of role updates: they are resolved from the entry's
+registry class at authorization time, are never stored in the entry's roles, and cannot be granted,
+revoked, or transferred through role-update messages.
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| `REGISTRY_CLASS_ROLE_UNSPECIFIED` | `0` | REGISTRY_CLASS_ROLE_UNSPECIFIED is the default/unset value. |
+| `REGISTRY_CLASS_ROLE_MAINTAINER` | `1` | REGISTRY_CLASS_ROLE_MAINTAINER is the maintainer of the registry class associated with the entry. Resolution fails closed if the entry has no registry class or the class cannot be resolved. |
+
+
+
+<a name="provenance-registry-v1-SignatureType"></a>
+
+### SignatureType
+SignatureType defines how signature requirements are evaluated.
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| `SIGNATURE_TYPE_UNSPECIFIED` | `0` | SIGNATURE_TYPE_UNSPECIFIED is the default/unset value. |
+| `SIGNATURE_TYPE_REQUIRED_ALL` | `1` | SIGNATURE_TYPE_REQUIRED_ALL requires signatures from ALL listed roles. Fails immediately if any role does not exist in the registry or NFT state. |
+| `SIGNATURE_TYPE_REQUIRED_ALL_IF_SET` | `2` | SIGNATURE_TYPE_REQUIRED_ALL_IF_SET requires signatures from ALL listed roles, but only if they exist. Roles that are not set are silently skipped. |
+| `SIGNATURE_TYPE_REQUIRED_ANY` | `3` | SIGNATURE_TYPE_REQUIRED_ANY requires a signature from AT LEAST ONE of the listed roles. Fails if none of the roles exist. |
+| `SIGNATURE_TYPE_REQUIRED_ANY_IF_SET` | `4` | SIGNATURE_TYPE_REQUIRED_ANY_IF_SET requires a signature from AT LEAST ONE of the listed roles, but only if any of them exist. Skips the entire requirement if none of the roles are set. |
+
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
 
  <!-- end services -->
 
@@ -9330,6 +10179,9 @@ This contains all the registry entries that exist when the blockchain is first i
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | `entries` | [RegistryEntry](#provenance-registry-v1-RegistryEntry) | repeated | entries is the list of registry entries. These entries define the initial state of the registry module. |
+| `pending_role_changes` | [PendingRoleChange](#provenance-registry-v1-PendingRoleChange) | repeated | pending_role_changes is the list of role changes awaiting approval. These preserve in-flight multi-party role changes across genesis export/import. |
+| `registry_classes` | [RegistryClass](#provenance-registry-v1-RegistryClass) | repeated | registry_classes is the list of registry classes defining asset class-level authorization rules. |
+| `params` | [Params](#provenance-registry-v1-Params) |  | params defines the registry module parameters at genesis. |
 
 
 
@@ -9352,6 +10204,29 @@ This contains all the registry entries that exist when the blockchain is first i
 
 
 
+<a name="provenance-registry-v1-PendingRoleChange"></a>
+
+### PendingRoleChange
+PendingRoleChange is a role change awaiting the approvals required by the affected roles'
+authorization policies. Each required party submits a single-signer approval; once the
+accumulated approvers satisfy every affected role's policy, the change is applied atomically
+and this record is removed.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `id` | [string](#string) |  | id is the deterministic identifier of this pending change (a hash of key + the sorted set of role updates). |
+| `key` | [RegistryKey](#provenance-registry-v1-RegistryKey) |  | key identifies the registry entry the change applies to. |
+| `role_updates` | [RoleUpdate](#provenance-registry-v1-RoleUpdate) | repeated | role_updates is the desired state for each role the change will set when applied. The same desired-state, multi-role semantics as MsgSetRoles, collected through accumulated approvals. |
+| `proposer` | [string](#string) |  | proposer is the address that opened the pending change. |
+| `approvals` | [string](#string) | repeated | approvals is the accumulated set of addresses that have approved this change. |
+| `expires_at` | [google.protobuf.Timestamp](#google-protobuf-Timestamp) |  | expires_at is the block time after which this pending change is no longer valid. Zero value means no expiry. |
+
+
+
+
+
+
 <a name="provenance-registry-v1-RegistryEntry"></a>
 
 ### RegistryEntry
@@ -9363,6 +10238,7 @@ Each entry contains the key information and the roles assigned to various addres
 | ----- | ---- | ----- | ----------- |
 | `key` | [RegistryKey](#provenance-registry-v1-RegistryKey) |  | key ties the registry entry to an asset class and NFT id. This provides the unique identifier for the registry entry. |
 | `roles` | [RolesEntry](#provenance-registry-v1-RolesEntry) | repeated | roles is a list of roles and addresses that can perform that role. Each role entry contains a role type and the addresses authorized for that role. |
+| `registry_class_id` | [string](#string) |  | registry_class_id is the ID of the registry class governing this entry's authorization rules. If set, role updates for this entry use the authorization rules defined in the referenced registry class. If empty, role updates fall back to the module params default policies, and then to legacy NFT owner authorization for any role with no policy. |
 
 
 
@@ -9380,6 +10256,22 @@ It links registry entries to specific NFT assets and their associated asset clas
 | ----- | ---- | ----- | ----------- |
 | `nft_id` | [string](#string) |  | Identifier for the nft that this ledger is linked to. This could be a `x/metadata` scope id or an `x/nft` nft id. In order to create a ledger for an NFT, the NFT class must be registered in the ledger module as a LedgerClass. |
 | `asset_class_id` | [string](#string) |  | asset_class_id is the Scope Specification ID or NFT Class ID. This identifies the class or specification that the NFT belongs to. If it is a Scope Specification, the address is used, e.g."scopespec1qnwg86nsatx5pl56muw0v9ytlz3qu3jx6m". Otherwise, it is the NFT Class ID, e.g. "heloc-loan-class". |
+
+
+
+
+
+
+<a name="provenance-registry-v1-RoleUpdate"></a>
+
+### RoleUpdate
+RoleUpdate specifies the desired set of addresses for a single role.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `role` | [RegistryRole](#provenance-registry-v1-RegistryRole) |  | role is the role to update. |
+| `addresses` | [string](#string) | repeated | addresses is the desired set of addresses for this role. An empty list means the role should be cleared entirely. |
 
 
 
@@ -9420,7 +10312,43 @@ These roles determine the permissions and capabilities that an address has withi
 | `REGISTRY_ROLE_CUSTODIAN` | `4` | REGISTRY_ROLE_CUSTODIAN indicates the address has custodian privileges. Custodians are responsible for holding and safeguarding the underlying assets. |
 | `REGISTRY_ROLE_BORROWER` | `5` | REGISTRY_ROLE_BORROWER indicates the address has borrower privileges. Borrowers can borrow against the underlying assets within defined parameters. |
 | `REGISTRY_ROLE_ORIGINATOR` | `6` | REGISTRY_ROLE_ORIGINATOR indicates the address has originator privileges. Originators are responsible for creating and originating the underlying assets. |
+| `REGISTRY_ROLE_LIEN_OWNER` | `7` | REGISTRY_ROLE_LIEN_OWNER indicates the entity on whose behalf the registry acts as a nominal lien holder. |
+| `REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN` | `8` | REGISTRY_ROLE_SECURED_PARTY_FOR_LIEN indicates an organization with a security interest in the lien. This party can foreclose into the Lien Owner role or direct a transfer in case of default. |
+| `REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE` | `9` | REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE indicates an organization with a financial interest in the eNote. This party can foreclose into the Controller role or direct a transfer in case of default. |
+| `REGISTRY_ROLE_PLEDGEE` | `10` | REGISTRY_ROLE_PLEDGEE indicates a lender or creditor that holds a security interest in pledged loans as collateral securing an obligation of the Pledgor. |
 
+
+ <!-- end enums -->
+
+ <!-- end HasExtensions -->
+
+ <!-- end services -->
+
+
+
+<a name="provenance_registry_v1_params-proto"></a>
+<p align="right"><a href="#top">Top</a></p>
+
+## provenance/registry/v1/params.proto
+
+
+
+<a name="provenance-registry-v1-Params"></a>
+
+### Params
+Params defines the registry module's parameters.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `role_authorizations` | [RoleAuthorization](#provenance-registry-v1-RoleAuthorization) | repeated | role_authorizations are the default authorization policies that govern role updates for registry entries that are not associated with a registry class. They form the middle tier of the two-tier resolution: a registry class policy takes precedence, then these module defaults, and finally roles without any policy fall back to legacy NFT-owner authorization. |
+| `pending_change_expiry` | [google.protobuf.Duration](#google-protobuf-Duration) |  | pending_change_expiry is how long a pending role change remains valid after it is proposed. Approvals received after the expiry are rejected and the change is cleaned up. Zero value (default) means pending changes never expire. |
+
+
+
+
+
+ <!-- end messages -->
 
  <!-- end enums -->
 

@@ -9,6 +9,17 @@ A complete example registry class expressing the participant role policies as or
 Controller (with foreclosure), Secured Party for Lien, Secured Party for eNote, Pledgee, Servicer,
 and Sub-servicer.
 
+Every policy also has a "Registry maintainer" authorization path, which the class maintainer can satisfy alone.
+It uses the `registry_class_role` selector:
+
+```json
+{"registry_class_role": "REGISTRY_CLASS_ROLE_MAINTAINER", "assignment": "ASSIGNMENT_CURRENT"}
+```
+
+This selector grants no authority on its own; the maintainer can only update the roles whose policies include it.
+It resolves to the maintainer of the entry's registry class, can only be used with the `ASSIGNMENT_CURRENT*` assignments, and cannot be used in the module params policies.
+Remove these paths from any role the maintainer should not be able to update unilaterally.
+
 These policies are evaluated by the registry's authorization engine; none of them are hard-coded into
 the chain. A maintainer installs them per asset class:
 

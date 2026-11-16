@@ -57,6 +57,18 @@ enum NftRole {
   NFT_ROLE_NFT_OWNER = 1;
 }
 
+// RegistryClassRole identifies roles defined by the registry class associated with a registry entry.
+// These roles are read-only from the perspective of role updates: they are resolved from the entry's
+// registry class at authorization time, are never stored in the entry's roles, and cannot be granted,
+// revoked, or transferred through role-update messages.
+enum RegistryClassRole {
+  // REGISTRY_CLASS_ROLE_UNSPECIFIED is the default/unset value.
+  REGISTRY_CLASS_ROLE_UNSPECIFIED = 0;
+  // REGISTRY_CLASS_ROLE_MAINTAINER is the maintainer of the registry class associated with the entry.
+  // Resolution fails closed if the entry has no registry class or the class cannot be resolved.
+  REGISTRY_CLASS_ROLE_MAINTAINER = 1;
+}
+
 // Assignment describes which address(es) to resolve for a role in an authorization check.
 enum Assignment {
   // ASSIGNMENT_UNSPECIFIED is the default/unset value.
@@ -115,7 +127,8 @@ message SignatureRequirement {
 
 // RoleAssignment specifies which role and which assignment type to resolve for a signature check.
 message RoleAssignment {
-  // role_selector identifies the role to resolve, either a single role or a priority list.
+  // role_selector identifies the role to resolve: a single registry, NFT, or registry class role, or a
+  // priority list.
   oneof role_selector {
     // registry_role is a role managed within the registry module state.
     // Can be used with any assignment type.
@@ -125,6 +138,10 @@ message RoleAssignment {
     NftRole nft_role = 2;
     // role_priority is an ordered list of roles; the first one that exists is used.
     RolePriority role_priority = 3;
+    // registry_class_role is a role defined by the entry's registry class (e.g.
+    // REGISTRY_CLASS_ROLE_MAINTAINER). Can only be used with ASSIGNMENT_CURRENT* variants, and only in
+    // registry class role authorizations (not in the module params defaults).
+    RegistryClassRole registry_class_role = 5;
   }
 
   // assignment specifies which address(es) to resolve for the role.

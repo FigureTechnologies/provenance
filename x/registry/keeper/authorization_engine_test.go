@@ -171,3 +171,85 @@ func (s *KeeperTestSuite) TestEngine_RequiredAnyIfSet_NoRolesSet() {
 		s.Require().Contains(err.Error(), "no required signature found in any role")
 	})
 }
+
+func (s *KeeperTestSuite) TestEngine_RegistryClassRoleWithNonCurrentAssignment() {
+	entry := s.engineEntry(nil)
+	policy := singleSigPolicy(&types.RoleAssignment{
+		RoleSelector: &types.RoleAssignment_RegistryClassRole{RegistryClassRole: types.RegistryClassRole_REGISTRY_CLASS_ROLE_MAINTAINER},
+		Assignment:   types.Assignment_ASSIGNMENT_NEW,
+	})
+
+	err := s.app.RegistryKeeper.ValidateRoleChangeAuthorization(s.ctx, policy, entry, nil, []string{s.user1})
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "RegistryClassRole may only be used with ASSIGNMENT_CURRENT* variants")
+}
+
+func (s *KeeperTestSuite) TestEngine_UnsupportedRegistryClassRole() {
+	entry := s.engineEntry(nil)
+	entry.RegistryClassId = "engine-class"
+	policy := singleSigPolicy(&types.RoleAssignment{
+		RoleSelector: &types.RoleAssignment_RegistryClassRole{RegistryClassRole: types.RegistryClassRole_REGISTRY_CLASS_ROLE_UNSPECIFIED},
+		Assignment:   types.Assignment_ASSIGNMENT_CURRENT,
+	})
+
+	err := s.app.RegistryKeeper.ValidateRoleChangeAuthorization(s.ctx, policy, entry, nil, []string{s.user1})
+	s.Require().Error(err)
+	s.Require().Contains(err.Error(), "unsupported RegistryClassRole")
+}
+
+// TestEngine_RegistryClassMaintainer covers how the REGISTRY_CLASS_ROLE_MAINTAINER selector resolves.
+// It must fail closed (never be skipped, even by an *_IF_SET requirement) when the entry has no
+// resolvable registry class or maintainer, and never fall back to any other role.
+func (s *KeeperTestSuite) TestEngine_RegistryClassMaintainer() {
+	maintainer := s.user2
+	s.Require().NoError(s.app.RegistryKeeper.SetRegistryClass(s.ctx, types.RegistryClass{
+		RegistryClassId: "engine-class",
+		AssetClassId:    s.validNFTClass.Id,
+		Maintainer:      maintainer,
+	}))
+	s.Require().NoError(s.app.RegistryKeeper.SetRegistryClass(s.ctx, types.RegistryClass{
+		RegistryClassId: "engine-class-other-asset",
+		AssetClassId:    "some-other-asset-class",
+		Maintainer:      maintainer,
+	}))
+
+	ifSetPolicy := types.RoleAuthorization{
+		Role: types.RegistryRole_REGISTRY_ROLE_SERVICER,
+		Authorizations: []*types.Authorization{{
+			Signatures: []*types.SignatureRequirement{{
+				Type: types.SignatureType_SIGNATURE_TYPE_REQUIRED_ALL_IF_SET,
+				Roles: []*types.RoleAssignment{{
+					RoleSelector: &types.RoleAssignment_RegistryClassRole{RegistryClassRole: types.RegistryClassRole_REGISTRY_CLASS_ROLE_MAINTAINER},
+					Assignment:   types.Assignment_ASSIGNMENT_CURRENT,
+				}},
+			}},
+		}},
+	}
+
+	tests := []struct {
+		name    string
+		classID string
+		signers []string
+		expErr  string
+	}{
+		{name: "maintainer signs", classID: "engine-class", signers: []string{maintainer}},
+		{name: "other signer", classID: "engine-class", signers: []string{s.user1}, expErr: "missing required signature"},
+		{name: "entry without a registry class", classID: "", signers: []string{s.user1, maintainer}, expErr: "not associated with a registry class"},
+		{name: "registry class missing from state", classID: "missing-class", signers: []string{maintainer}, expErr: "missing-class"},
+		{name: "registry class for another asset class", classID: "engine-class-other-asset", signers: []string{maintainer}, expErr: "some-other-asset-class"},
+	}
+
+	for _, tc := range tests {
+		s.Run(tc.name, func() {
+			entry := s.engineEntry(nil)
+			entry.RegistryClassId = tc.classID
+			err := s.app.RegistryKeeper.ValidateRoleChangeAuthorization(s.ctx, ifSetPolicy, entry, nil, tc.signers)
+			if tc.expErr == "" {
+				s.Require().NoError(err)
+				return
+			}
+			s.Require().Error(err)
+			s.Require().Contains(err.Error(), tc.expErr)
+		})
+	}
+}

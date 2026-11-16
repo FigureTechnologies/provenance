@@ -62,9 +62,10 @@ message EventRoleChangeApplied {
   string change_id      = 3;
 }
 
-// EventRoleChangeCancelled is emitted when a pending role change is cancelled by its proposer.
+// EventRoleChangeCancelled is emitted when a pending role change is cancelled by its proposer or by
+// the maintainer of the entry's registry class.
 message EventRoleChangeCancelled {
-  string change_id  = 1;
+  string change_id    = 1;
   string cancelled_by = 2;
 }
 
@@ -87,7 +88,7 @@ message EventParamsUpdated {}
 // RoleSigner describes a role/assignment whose resolved addresses contributed a signature toward
 // authorizing a role change. It is the structured form of an entry in EventRoleUpdated.signers.
 message RoleSigner {
-  // role is the (registry or NFT) role whose holders provided the signature(s).
+  // role is the (registry, NFT, or registry class) role whose holders provided the signature(s).
   string role = 1;
   // assignment is the assignment variant the role was resolved under (e.g. ASSIGNMENT_CURRENT).
   string assignment = 2;

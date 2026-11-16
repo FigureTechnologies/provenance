@@ -383,8 +383,9 @@ var xxx_messageInfo_MsgRevokeRoleResponse proto.InternalMessageInfo
 // MsgUnregisterNFT represents a message to unregister an NFT from the registry.
 // This message removes the entire registry entry for the specified key.
 type MsgUnregisterNFT struct {
-	// signer is the address that is authorized to unregister NFTs.
-	// This address must have the appropriate permissions to remove registry entries.
+	// signer is the address authorizing the removal. If the entry is associated with a registry
+	// class, the signer must be that class's maintainer. Otherwise, the signer must be the CONTROLLER
+	// if one is set, or the NFT owner if not.
 	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
 	// key is the registry key to remove.
 	// This identifies the specific registry entry to delete.
@@ -906,9 +907,10 @@ func (m *MsgApproveRoleChangeResponse) GetApplied() bool {
 }
 
 // MsgCancelRoleChange cancels an open pending role change.
-// Only the original proposer may cancel.
+// The original proposer or the maintainer of the entry's registry class may cancel.
 type MsgCancelRoleChange struct {
-	// signer must be the original proposer of the pending change.
+	// signer must be the original proposer of the pending change, or the maintainer of the registry
+	// class associated with the change's registry entry.
 	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
 	// change_id is the identifier of the pending change to cancel.
 	ChangeId string `protobuf:"bytes,2,opt,name=change_id,json=changeId,proto3" json:"change_id,omitempty"`
@@ -1002,19 +1004,18 @@ var xxx_messageInfo_MsgCancelRoleChangeResponse proto.InternalMessageInfo
 // entry without modifying any roles. This is the upgrade path from legacy (no-class) registration
 // to class-governed authorization.
 //
-// Authorization priority:
-//  1. CONTROLLER: if the entry has a CONTROLLER role set, the signer must be one of those
-//     controllers.
-//  2. Scope data owner: if the NFT is a Provenance Metadata Scope, the signer must be one of
-//     the scope's data-owner parties.
-//  3. NFT owner: for all other NFTs with no controller set, the signer must own the NFT.
+// Authorization: the signer must satisfy at least one of the following — neither takes precedence:
+//   - CONTROLLER: the signer is one of the entry's CONTROLLER role addresses.
+//   - Scope data owner: if the NFT is a Provenance Metadata Scope, the signer is one of the
+//     scope's data-owner parties.
+//   - NFT owner: for all other NFTs, the signer owns the NFT.
 type MsgAssociateRegistryClass struct {
 	// signer is the address authorizing this association.
 	Signer string `protobuf:"bytes,1,opt,name=signer,proto3" json:"signer,omitempty"`
 	// key identifies the existing registry entry to update.
 	Key *RegistryKey `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
-	// registry_class_id is the ID of the registry class to associate. Pass an empty string to
-	// remove the current association and fall back to module-level authorization.
+	// registry_class_id is the ID of the registry class to associate. Must be non-empty; the
+	// referenced class must exist and its asset_class_id must match the entry's asset_class_id.
 	RegistryClassId string `protobuf:"bytes,3,opt,name=registry_class_id,json=registryClassId,proto3" json:"registryClassId,omitempty"`
 }
 
@@ -1565,6 +1566,8 @@ type MsgClient interface {
 	RevokeRole(ctx context.Context, in *MsgRevokeRole, opts ...grpc.CallOption) (*MsgRevokeRoleResponse, error)
 	// UnregisterNFT unregisters an NFT from the registry.
 	// This removes the entire registry entry for the specified key.
+	// If the entry is associated with a registry class, only the registry class maintainer may sign.
+	// Otherwise, the CONTROLLER must sign if one is set, or the NFT owner if not.
 	UnregisterNFT(ctx context.Context, in *MsgUnregisterNFT, opts ...grpc.CallOption) (*MsgUnregisterNFTResponse, error)
 	// RegistryBulkUpdate registers, or updates, multiple NFTs in the registry.
 	// This creates multiple registry entries, or updates if one exists.
@@ -1587,7 +1590,7 @@ type MsgClient interface {
 	// class. Only the current maintainer may update the rules.
 	UpdateRegistryClassRoleAuthorization(ctx context.Context, in *MsgUpdateRegistryClassRoleAuthorization, opts ...grpc.CallOption) (*MsgUpdateRegistryClassRoleAuthorizationResponse, error)
 	// CancelRoleChange cancels an open pending role change.
-	// Only the original proposer may cancel.
+	// The original proposer or the maintainer of the entry's registry class may cancel.
 	CancelRoleChange(ctx context.Context, in *MsgCancelRoleChange, opts ...grpc.CallOption) (*MsgCancelRoleChangeResponse, error)
 	// AssociateRegistryClass associates or updates the registry class for an existing registry entry
 	// without modifying any roles. The signer must be the CONTROLLER if one is set, or the scope
@@ -1741,6 +1744,8 @@ type MsgServer interface {
 	RevokeRole(context.Context, *MsgRevokeRole) (*MsgRevokeRoleResponse, error)
 	// UnregisterNFT unregisters an NFT from the registry.
 	// This removes the entire registry entry for the specified key.
+	// If the entry is associated with a registry class, only the registry class maintainer may sign.
+	// Otherwise, the CONTROLLER must sign if one is set, or the NFT owner if not.
 	UnregisterNFT(context.Context, *MsgUnregisterNFT) (*MsgUnregisterNFTResponse, error)
 	// RegistryBulkUpdate registers, or updates, multiple NFTs in the registry.
 	// This creates multiple registry entries, or updates if one exists.
@@ -1763,7 +1768,7 @@ type MsgServer interface {
 	// class. Only the current maintainer may update the rules.
 	UpdateRegistryClassRoleAuthorization(context.Context, *MsgUpdateRegistryClassRoleAuthorization) (*MsgUpdateRegistryClassRoleAuthorizationResponse, error)
 	// CancelRoleChange cancels an open pending role change.
-	// Only the original proposer may cancel.
+	// The original proposer or the maintainer of the entry's registry class may cancel.
 	CancelRoleChange(context.Context, *MsgCancelRoleChange) (*MsgCancelRoleChangeResponse, error)
 	// AssociateRegistryClass associates or updates the registry class for an existing registry entry
 	// without modifying any roles. The signer must be the CONTROLLER if one is set, or the scope

@@ -213,7 +213,8 @@ func (k msgServer) ApproveRoleChange(ctx context.Context, msg *types.MsgApproveR
 	return &types.MsgApproveRoleChangeResponse{Applied: applied}, nil
 }
 
-// CancelRoleChange cancels an open pending role change. Only the original proposer may cancel.
+// CancelRoleChange cancels an open pending role change. The original proposer may cancel, as may
+// the maintainer of the registry class associated with the change's registry entry.
 func (k msgServer) CancelRoleChange(ctx context.Context, msg *types.MsgCancelRoleChange) (*types.MsgCancelRoleChangeResponse, error) {
 	change, err := k.GetPendingRoleChange(ctx, msg.ChangeId)
 	if err != nil {
@@ -223,13 +224,36 @@ func (k msgServer) CancelRoleChange(ctx context.Context, msg *types.MsgCancelRol
 		return nil, types.NewErrCodePendingChangeNotFound(msg.ChangeId)
 	}
 	if change.Proposer != msg.Signer {
-		return nil, types.NewErrCodeUnauthorized("only the original proposer may cancel a pending role change")
+		if err := k.validatePendingChangeMaintainer(ctx, change, msg.Signer); err != nil {
+			return nil, err
+		}
 	}
 	if err := k.RemovePendingRoleChange(ctx, msg.ChangeId); err != nil {
 		return nil, err
 	}
 	k.EmitEvent(ctx, types.NewEventRoleChangeCancelled(msg.ChangeId, msg.Signer))
 	return &types.MsgCancelRoleChangeResponse{}, nil
+}
+
+// validatePendingChangeMaintainer returns nil if signer is the maintainer of the registry class
+// associated with the pending change's registry entry, or an unauthorized error otherwise.
+func (k msgServer) validatePendingChangeMaintainer(ctx context.Context, change *types.PendingRoleChange, signer string) error {
+	notAuthorized := types.NewErrCodeUnauthorized("only the original proposer or the registry class maintainer may cancel a pending role change")
+	entry, err := k.GetRegistry(ctx, change.Key)
+	if err != nil {
+		return err
+	}
+	if entry == nil || entry.RegistryClassId == "" {
+		return notAuthorized
+	}
+	maintainer, err := k.registryClassMaintainer(ctx, entry)
+	if err != nil {
+		return err
+	}
+	if signer != maintainer {
+		return notAuthorized
+	}
+	return nil
 }
 
 // AssociateRegistryClass associates or updates the registry class on an existing entry.
@@ -311,22 +335,27 @@ func (k msgServer) UnregisterNFT(ctx context.Context, msg *types.MsgUnregisterNF
 		return nil, fmt.Errorf("could not get registry entry: %w", err)
 	}
 
-	// If a CONTROLLER is set, the CONTROLLER must sign. This prevents an NFT owner from bypassing
-	// multi-party role policies by unregistering and re-registering with new roles. The controller
-	// does not need to own the NFT — the controller role is authoritative for this action when set.
-	// If no controller is set, fall back to NFT-ownership authorization.
-	if entry != nil {
-		controllers := entry.GetRoleAddrs(types.RegistryRole_REGISTRY_ROLE_CONTROLLER)
-		if len(controllers) > 0 {
-			if !slices.Contains(controllers, msg.Signer) {
-				return nil, types.NewErrCodeUnauthorized("signer is not the controller")
-			}
-		} else {
-			if err := k.ValidateNFTOwner(ctx, &msg.Key.AssetClassId, &msg.Key.NftId, msg.Signer); err != nil {
-				return nil, err
-			}
+	switch {
+	case entry != nil && entry.RegistryClassId != "":
+		/*
+		 * Only the registry class maintainer may unregister an entry associated with a registry class.
+		 * This prevents the NFT owner or controller from bypassing the class's role policies by
+		 * unregistering and re-registering with new roles. Resolution fails closed if the class or its
+		 * maintainer cannot be resolved.
+		 */
+		maintainer, err := k.registryClassMaintainer(ctx, entry)
+		if err != nil {
+			return nil, err
 		}
-	} else {
+		if msg.Signer != maintainer {
+			return nil, types.NewErrCodeUnauthorized("signer is not the registry class maintainer")
+		}
+	case entry != nil && len(entry.GetRoleAddrs(types.RegistryRole_REGISTRY_ROLE_CONTROLLER)) > 0:
+		// If a CONTROLLER is set, the CONTROLLER must sign. The controller does not need to own the NFT.
+		if !slices.Contains(entry.GetRoleAddrs(types.RegistryRole_REGISTRY_ROLE_CONTROLLER), msg.Signer) {
+			return nil, types.NewErrCodeUnauthorized("signer is not the controller")
+		}
+	default:
 		if err := k.ValidateNFTOwner(ctx, &msg.Key.AssetClassId, &msg.Key.NftId, msg.Signer); err != nil {
 			return nil, err
 		}

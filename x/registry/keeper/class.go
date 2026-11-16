@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"cosmossdk.io/collections"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 
 	"github.com/provenance-io/provenance/x/registry/types"
@@ -160,4 +162,28 @@ func (k Keeper) roleAuthorizationsForEntry(ctx context.Context, entry *types.Reg
 		return types.RoleAuthorizationMapFrom(class.RoleAuthorizations), nil
 	}
 	return k.GetParams(ctx).RoleAuthorizationMap(), nil
+}
+
+// registryClassMaintainer resolves the maintainer of the registry class associated with the given
+// entry. It fails closed (returns an error) if the entry has no registry class, the class cannot be
+// read or is absent from state, the class does not govern the entry's asset class, or the class's
+// maintainer is not a valid address. It never falls back to any other role.
+func (k Keeper) registryClassMaintainer(ctx context.Context, entry *types.RegistryEntry) (string, error) {
+	if entry == nil || entry.RegistryClassId == "" {
+		return "", types.NewErrCodeUnauthorized("registry entry is not associated with a registry class, so it has no registry class maintainer")
+	}
+	class, err := k.GetRegistryClass(ctx, entry.RegistryClassId)
+	if err != nil {
+		return "", fmt.Errorf("could not resolve registry class %q: %w", entry.RegistryClassId, err)
+	}
+	if class == nil {
+		return "", types.NewErrCodeRegistryClassNotFound(entry.RegistryClassId)
+	}
+	if entry.Key != nil && class.AssetClassId != entry.Key.AssetClassId {
+		return "", types.NewErrCodeRegistryClassAssetMismatch(entry.RegistryClassId, class.AssetClassId, entry.Key.AssetClassId)
+	}
+	if _, err = sdk.AccAddressFromBech32(class.Maintainer); err != nil {
+		return "", types.NewErrCodeUnauthorized(fmt.Sprintf("registry class %q has an invalid maintainer address: %v", entry.RegistryClassId, err))
+	}
+	return class.Maintainer, nil
 }

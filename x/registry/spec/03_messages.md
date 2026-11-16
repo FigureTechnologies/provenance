@@ -80,7 +80,9 @@ A registry can be deleted using a `MsgUnregisterNFT`.
 
 It is expected to fail if:
 * The NFT does not yet have a registry.
-* The `signer` is not the owner of the NFT.
+* The registry entry is associated with a registry class, and the `signer` is not that class's maintainer.
+* The registry entry is not associated with a registry class, a `CONTROLLER` is set, and the `signer` is not a `CONTROLLER`.
+* The registry entry is not associated with a registry class, no `CONTROLLER` is set, and the `signer` is not the owner of the NFT.
 * The msg is invalid.
 
 ### MsgUnregisterNFT

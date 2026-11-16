@@ -55,6 +55,29 @@ func TestNftRole_Validate(t *testing.T) {
 	}
 }
 
+func TestRegistryClassRole_Validate(t *testing.T) {
+	tests := []struct {
+		name   string
+		role   types.RegistryClassRole
+		expErr string
+	}{
+		{name: "maintainer", role: types.RegistryClassRole_REGISTRY_CLASS_ROLE_MAINTAINER},
+		{name: "unspecified", role: types.RegistryClassRole_REGISTRY_CLASS_ROLE_UNSPECIFIED, expErr: "cannot be unspecified"},
+		{name: "undefined value", role: types.RegistryClassRole(9999), expErr: "unknown"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.role.Validate()
+			if tc.expErr == "" {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), tc.expErr)
+			}
+		})
+	}
+}
+
 func TestAssignment_Validate(t *testing.T) {
 	tests := []struct {
 		name       string

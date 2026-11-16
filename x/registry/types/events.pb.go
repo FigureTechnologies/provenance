@@ -503,7 +503,8 @@ func (m *EventRoleChangeApplied) GetChangeId() string {
 	return ""
 }
 
-// EventRoleChangeCancelled is emitted when a pending role change is cancelled by its proposer.
+// EventRoleChangeCancelled is emitted when a pending role change is cancelled by its proposer or by
+// the maintainer of the entry's registry class.
 type EventRoleChangeCancelled struct {
 	ChangeId    string `protobuf:"bytes,1,opt,name=change_id,json=changeId,proto3" json:"change_id,omitempty"`
 	CancelledBy string `protobuf:"bytes,2,opt,name=cancelled_by,json=cancelledBy,proto3" json:"cancelled_by,omitempty"`
@@ -710,7 +711,7 @@ var xxx_messageInfo_EventParamsUpdated proto.InternalMessageInfo
 // RoleSigner describes a role/assignment whose resolved addresses contributed a signature toward
 // authorizing a role change. It is the structured form of an entry in EventRoleUpdated.signers.
 type RoleSigner struct {
-	// role is the (registry or NFT) role whose holders provided the signature(s).
+	// role is the (registry, NFT, or registry class) role whose holders provided the signature(s).
 	Role string `protobuf:"bytes,1,opt,name=role,proto3" json:"role,omitempty"`
 	// assignment is the assignment variant the role was resolved under (e.g. ASSIGNMENT_CURRENT).
 	Assignment string `protobuf:"bytes,2,opt,name=assignment,proto3" json:"assignment,omitempty"`

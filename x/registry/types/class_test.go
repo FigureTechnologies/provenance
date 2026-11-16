@@ -160,7 +160,7 @@ func TestRegistryClass_Validate(t *testing.T) {
 			mutate: func(c *types.RegistryClass) {
 				c.RoleAuthorizations[0].Authorizations[0].Signatures[0].Roles[0].RoleSelector = nil
 			},
-			expErr: "a role selector (registry_role, nft_role, or role_priority) must be set",
+			expErr: "a role selector (registry_role, nft_role, role_priority, or registry_class_role) must be set",
 		},
 		{
 			name: "valid nft_role with current assignment",
@@ -190,6 +190,45 @@ func TestRegistryClass_Validate(t *testing.T) {
 				}
 			},
 			expErr: "nft_role",
+		},
+		{
+			name: "valid registry_class_role with current assignment",
+			mutate: func(c *types.RegistryClass) {
+				c.RoleAuthorizations[0].Authorizations[0].Signatures[0].Roles[0] = &types.RoleAssignment{
+					RoleSelector: &types.RoleAssignment_RegistryClassRole{RegistryClassRole: types.RegistryClassRole_REGISTRY_CLASS_ROLE_MAINTAINER},
+					Assignment:   types.Assignment_ASSIGNMENT_CURRENT_ANY,
+				}
+			},
+		},
+		{
+			name: "registry_class_role with non-current assignment",
+			mutate: func(c *types.RegistryClass) {
+				c.RoleAuthorizations[0].Authorizations[0].Signatures[0].Roles[0] = &types.RoleAssignment{
+					RoleSelector: &types.RoleAssignment_RegistryClassRole{RegistryClassRole: types.RegistryClassRole_REGISTRY_CLASS_ROLE_MAINTAINER},
+					Assignment:   types.Assignment_ASSIGNMENT_NEW_ALL,
+				}
+			},
+			expErr: "registry_class_role may only be used with a CURRENT* assignment",
+		},
+		{
+			name: "unspecified registry_class_role",
+			mutate: func(c *types.RegistryClass) {
+				c.RoleAuthorizations[0].Authorizations[0].Signatures[0].Roles[0] = &types.RoleAssignment{
+					RoleSelector: &types.RoleAssignment_RegistryClassRole{RegistryClassRole: types.RegistryClassRole_REGISTRY_CLASS_ROLE_UNSPECIFIED},
+					Assignment:   types.Assignment_ASSIGNMENT_CURRENT,
+				}
+			},
+			expErr: "registry_class_role cannot be unspecified",
+		},
+		{
+			name: "unknown registry_class_role",
+			mutate: func(c *types.RegistryClass) {
+				c.RoleAuthorizations[0].Authorizations[0].Signatures[0].Roles[0] = &types.RoleAssignment{
+					RoleSelector: &types.RoleAssignment_RegistryClassRole{RegistryClassRole: types.RegistryClassRole(99)},
+					Assignment:   types.Assignment_ASSIGNMENT_CURRENT,
+				}
+			},
+			expErr: "registry_class_role",
 		},
 		{
 			name: "valid role_priority",

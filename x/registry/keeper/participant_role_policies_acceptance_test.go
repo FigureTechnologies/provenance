@@ -313,6 +313,34 @@ func (s *ParticipantRolePoliciesAcceptanceTestSuite) TestAllParticipantPoliciesC
 	s.Require().Len(got.RoleAuthorizations, len(participantRoleAuthorizations()))
 }
 
+// TestMaintainerBackfillsParticipantRoles verifies that the class maintainer alone can set every
+// participant role on an entry in a single MsgSetRoles, as needed to reconcile and backfill roles.
+func (s *ParticipantRolePoliciesAcceptanceTestSuite) TestMaintainerBackfillsParticipantRoles() {
+	key := s.registerWithRoles("maintainer-backfill", nil)
+
+	var updates []types.RoleUpdate
+	for _, auth := range participantRoleAuthorizations() {
+		updates = append(updates, types.RoleUpdate{Role: auth.Role, Addresses: []string{genAddr()}})
+	}
+
+	_, err := s.msgServer.SetRoles(s.ctx, &types.MsgSetRoles{
+		Signer:      s.maintainer,
+		Key:         key,
+		RoleUpdates: updates,
+	})
+	s.Require().NoError(err)
+	for _, update := range updates {
+		s.Require().Equal(update.Addresses, s.roleAddresses(key, update.Role), "role %s", update.Role)
+	}
+
+	_, err = s.msgServer.SetRoles(s.ctx, &types.MsgSetRoles{
+		Signer:      s.nftOwner,
+		Key:         key,
+		RoleUpdates: []types.RoleUpdate{{Role: types.RegistryRole_REGISTRY_ROLE_CONTROLLER, Addresses: []string{s.nftOwner}}},
+	})
+	s.Require().Error(err, "the NFT owner must not be able to use the maintainer path")
+}
+
 // TestMalformedPolicyRejected verifies the deepened create-time validation rejects malformed
 // authorization paths instead of letting them fail closed only at evaluation time.
 func (s *ParticipantRolePoliciesAcceptanceTestSuite) TestMalformedPolicyRejected() {
@@ -416,9 +444,10 @@ func (s *ParticipantRolePoliciesAcceptanceTestSuite) TestExampleFixtureInSync() 
 
 // --- Participant policy builders (mirror requirements.md §"Participant Roles") ---------------------
 
-// participantRoleAuthorizations returns the full set of participant role policies.
+// participantRoleAuthorizations returns the full set of participant role policies. Each policy also
+// includes a registry maintainer path so the class maintainer can reconcile and remediate roles.
 func participantRoleAuthorizations() []types.RoleAuthorization {
-	return []types.RoleAuthorization{
+	auths := []types.RoleAuthorization{
 		originatorPolicy(),
 		lienOwnerPolicy(),
 		controllerPolicy(),
@@ -427,6 +456,21 @@ func participantRoleAuthorizations() []types.RoleAuthorization {
 		pledgeePolicy(),
 		servicerPolicy(),
 		subservicerPolicy(),
+	}
+	for i := range auths {
+		auths[i].Authorizations = append(auths[i].Authorizations, registryMaintainerAuthorization())
+	}
+	return auths
+}
+
+// registryMaintainerAuthorization returns an authorization path satisfied by the registry class
+// maintainer alone.
+func registryMaintainerAuthorization() *types.Authorization {
+	return &types.Authorization{
+		Description: "Registry maintainer",
+		Signatures: []*types.SignatureRequirement{
+			sigReqAll(raRegistryClass(types.RegistryClassRole_REGISTRY_CLASS_ROLE_MAINTAINER, types.Assignment_ASSIGNMENT_CURRENT)),
+		},
 	}
 }
 
@@ -652,6 +696,13 @@ func raNft(nftRole types.NftRole, assignment types.Assignment) *types.RoleAssign
 func raPriority(assignment types.Assignment, entries ...*types.RolePriorityEntry) *types.RoleAssignment {
 	return &types.RoleAssignment{
 		RoleSelector: &types.RoleAssignment_RolePriority{RolePriority: &types.RolePriority{Entries: entries}},
+		Assignment:   assignment,
+	}
+}
+
+func raRegistryClass(classRole types.RegistryClassRole, assignment types.Assignment) *types.RoleAssignment {
+	return &types.RoleAssignment{
+		RoleSelector: &types.RoleAssignment_RegistryClassRole{RegistryClassRole: classRole},
 		Assignment:   assignment,
 	}
 }

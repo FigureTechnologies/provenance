@@ -108,7 +108,8 @@ func validateSignatureRequirement(i, j, k int, req *SignatureRequirement) []erro
 
 // validateRoleAssignment validates a single role selector within a signature requirement. It
 // enforces that exactly one selector kind is set, that referenced enum values are defined, and that
-// NftRole selectors only use the CURRENT* assignment family. i/j/k/l are the nested indices.
+// NftRole and RegistryClassRole selectors only use the CURRENT* assignment family. i/j/k/l are the
+// nested indices.
 func validateRoleAssignment(i, j, k, l int, ra *RoleAssignment) []error {
 	prefix := func(format string, args ...interface{}) error {
 		return NewErrCodeInvalidField("role_authorizations",
@@ -136,8 +137,14 @@ func validateRoleAssignment(i, j, k, l int, ra *RoleAssignment) []error {
 		}
 	case *RoleAssignment_RolePriority:
 		errs = append(errs, validateRolePriority(prefix, ra.Assignment, r.RolePriority)...)
+	case *RoleAssignment_RegistryClassRole:
+		if err := r.RegistryClassRole.Validate(); err != nil {
+			errs = append(errs, prefix("registry_class_role %s", err))
+		} else if !ra.Assignment.IsCurrent() {
+			errs = append(errs, prefix("registry_class_role may only be used with a CURRENT* assignment, got %s", ra.Assignment.String()))
+		}
 	default:
-		errs = append(errs, prefix("a role selector (registry_role, nft_role, or role_priority) must be set"))
+		errs = append(errs, prefix("a role selector (registry_role, nft_role, role_priority, or registry_class_role) must be set"))
 	}
 	return errs
 }

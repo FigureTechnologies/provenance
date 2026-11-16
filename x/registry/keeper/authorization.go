@@ -82,6 +82,34 @@ func (k Keeper) resolveNFTRoleAddresses(ctx context.Context, entry *types.Regist
 	}
 }
 
+// resolveRegistryClassRoleAddresses returns the address for a registry class role (e.g. the
+// maintainer of the entry's registry class). RegistryClassRole is read-only from the registry's
+// perspective and may only be used with the ASSIGNMENT_CURRENT* variants. Resolution fails closed:
+// an entry without a resolvable registry class (or maintainer) returns an error rather than
+// resolving to no address, so it can never be skipped by an *_IF_SET requirement.
+func (k Keeper) resolveRegistryClassRoleAddresses(ctx context.Context, entry *types.RegistryEntry, classRole types.RegistryClassRole, assignment types.Assignment) ([]string, bool, error) {
+	if !assignment.IsCurrent() {
+		return nil, false, types.NewErrCodeUnauthorized(
+			fmt.Sprintf("RegistryClassRole may only be used with ASSIGNMENT_CURRENT* variants, got %s", assignment.String()),
+		)
+	}
+
+	switch classRole {
+	case types.RegistryClassRole_REGISTRY_CLASS_ROLE_MAINTAINER:
+		maintainer, err := k.registryClassMaintainer(ctx, entry)
+		if err != nil {
+			return nil, false, err
+		}
+		return []string{maintainer}, true, nil
+	default:
+		// Fail closed: an unspecified/unknown RegistryClassRole is a policy misconfiguration and must
+		// not silently skip a required signature check.
+		return nil, false, types.NewErrCodeUnauthorized(
+			fmt.Sprintf("unsupported RegistryClassRole %s", classRole.String()),
+		)
+	}
+}
+
 // resolveRolePriorityAddresses iterates priority entries and returns addresses from the first
 // non-empty role that exists, implementing the "first match wins" fallback chain.
 func (k Keeper) resolveRolePriorityAddresses(ctx context.Context, entry *types.RegistryEntry, rp *types.RolePriority, assignment types.Assignment, newAddrs []string) ([]string, bool, error) {
@@ -123,6 +151,8 @@ func (k Keeper) resolveRoleAssignmentAddresses(ctx context.Context, entry *types
 		return k.resolveNFTRoleAddresses(ctx, entry, r.NftRole, ra.Assignment)
 	case *types.RoleAssignment_RolePriority:
 		return k.resolveRolePriorityAddresses(ctx, entry, r.RolePriority, ra.Assignment, newAddrs)
+	case *types.RoleAssignment_RegistryClassRole:
+		return k.resolveRegistryClassRoleAddresses(ctx, entry, r.RegistryClassRole, ra.Assignment)
 	default:
 		// Fail closed: an unset/unknown role selector is a policy misconfiguration and must not
 		// silently skip a required signature check.
@@ -339,6 +369,9 @@ func (k Keeper) resolveRoleAssignmentSigner(ctx context.Context, entry *types.Re
 			}
 		}
 		return "", nil, false, nil
+	case *types.RoleAssignment_RegistryClassRole:
+		addrs, exists, err := k.resolveRegistryClassRoleAddresses(ctx, entry, r.RegistryClassRole, ra.Assignment)
+		return r.RegistryClassRole.String(), addrs, exists, err
 	default:
 		return "", nil, false, nil
 	}
