@@ -112,8 +112,9 @@ func NewEventParamsUpdated() *EventParamsUpdated {
 }
 
 // NewEventRoleUpdated returns a new EventRoleUpdated describing the full state transition for a
-// single role, including the addresses before and after and the signers that authorized it.
-func NewEventRoleUpdated(key *RegistryKey, registryClassID string, role RegistryRole, previousAddrs, currentAddrs []string, signers []RoleSigner) *EventRoleUpdated {
+// single role, including the addresses before and after, the signers that authorized it, and the
+// address that proposed it.
+func NewEventRoleUpdated(key *RegistryKey, registryClassID string, role RegistryRole, previousAddrs, currentAddrs []string, signers []RoleSigner, proposer string) *EventRoleUpdated {
 	return &EventRoleUpdated{
 		NftId:             key.NftId,
 		AssetClassId:      key.AssetClassId,
@@ -122,6 +123,7 @@ func NewEventRoleUpdated(key *RegistryKey, registryClassID string, role Registry
 		Addresses:         currentAddrs,
 		PreviousAddresses: previousAddrs,
 		Signers:           signers,
+		Proposer:          proposer,
 	}
 }
 

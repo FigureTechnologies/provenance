@@ -131,6 +131,7 @@ func (s *RoleEventAndQueryAcceptanceTestSuite) TestEventRoleUpdated_LegacyPath()
 	s.Require().Equal("NFT_ROLE_NFT_OWNER", ev.Signers[0].Role)
 	s.Require().Equal("ASSIGNMENT_CURRENT", ev.Signers[0].Assignment)
 	s.Require().Equal([]string{s.nftOwner}, ev.Signers[0].Addresses)
+	s.Require().Equal(s.nftOwner, ev.Proposer, "a direct grant's proposer is the message signer")
 }
 
 // TestEventRoleUpdated_PolicyAccumulation: a CONTROLLER change applied via the propose/approve flow
@@ -178,6 +179,9 @@ func (s *RoleEventAndQueryAcceptanceTestSuite) TestEventRoleUpdated_PolicyAccumu
 	s.Require().Equal([]string{s.currentController}, got["REGISTRY_ROLE_CONTROLLER|ASSIGNMENT_CURRENT"])
 	s.Require().Equal([]string{s.securedParty}, got["REGISTRY_ROLE_SECURED_PARTY_FOR_ENOTE|ASSIGNMENT_CURRENT"])
 	s.Require().Equal([]string{s.newController}, got["REGISTRY_ROLE_CONTROLLER|ASSIGNMENT_NEW"])
+
+	// The proposer is the account that opened the pending change, not the approver that applied it.
+	s.Require().Equal(s.currentController, ev.Proposer)
 }
 
 // TestEventRoleUpdated_Revoke: a revoke (removing an address from a role) emits EventRoleUpdated
@@ -209,6 +213,7 @@ func (s *RoleEventAndQueryAcceptanceTestSuite) TestEventRoleUpdated_Revoke() {
 	s.Require().Len(ev.Signers, 1)
 	s.Require().Equal("NFT_ROLE_NFT_OWNER", ev.Signers[0].Role)
 	s.Require().Equal([]string{s.nftOwner}, ev.Signers[0].Addresses)
+	s.Require().Equal(s.nftOwner, ev.Proposer, "a direct revoke's proposer is the message signer")
 }
 
 // TestEventRoleUpdated_RegistryClassId: an entry registered under a class carries that class id on
@@ -251,6 +256,7 @@ func (s *RoleEventAndQueryAcceptanceTestSuite) TestEventRoleUpdated_RegistryClas
 	s.Require().Equal("REGISTRY_ROLE_CONTROLLER", ev.Signers[0].Role)
 	s.Require().Equal("ASSIGNMENT_CURRENT", ev.Signers[0].Assignment)
 	s.Require().Equal([]string{s.currentController}, ev.Signers[0].Addresses)
+	s.Require().Equal(s.currentController, ev.Proposer)
 }
 
 // TestSetRoles_AdditionsOnlyForNewAssignment: MsgSetRoles takes the full desired address set, but
@@ -314,6 +320,7 @@ func (s *RoleEventAndQueryAcceptanceTestSuite) TestSetRoles_AdditionsOnlyForNewA
 	s.Require().Equal("REGISTRY_ROLE_SERVICER", ev.Signers[0].Role)
 	s.Require().Equal("ASSIGNMENT_NEW", ev.Signers[0].Assignment)
 	s.Require().Equal([]string{newServicer}, ev.Signers[0].Addresses)
+	s.Require().Equal(newServicer, ev.Proposer, "a direct set's proposer is the message signer")
 }
 
 // --- Phase C5: ValidateRoleChange query ---------------------------------------------------------

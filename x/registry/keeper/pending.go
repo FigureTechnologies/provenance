@@ -355,7 +355,8 @@ func additions(current, desired []string) []string {
 }
 
 // applyPendingChange applies the batch of role updates as a single atomic desired-state set and
-// emits an EventRoleUpdated per role using the accumulated approvals as the authorizing signer set.
+// emits an EventRoleUpdated per role using the accumulated approvals as the authorizing signer set
+// and the change's original proposer as the proposer.
 // before is the pre-mutation entry, captured for previous addresses and signer resolution.
 func (k Keeper) applyPendingChange(ctx context.Context, before *types.RegistryEntry, change *types.PendingRoleChange) error {
 	if err := k.SetRoles(ctx, change.Key, change.RoleUpdates); err != nil {
@@ -367,7 +368,7 @@ func (k Keeper) applyPendingChange(ctx context.Context, before *types.RegistryEn
 		if err != nil {
 			return err
 		}
-		if err := k.emitRoleUpdated(ctx, before, update.Role, signers); err != nil {
+		if err := k.emitRoleUpdated(ctx, before, update.Role, signers, change.Proposer); err != nil {
 			return err
 		}
 	}

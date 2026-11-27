@@ -314,10 +314,10 @@ func (k Keeper) roleChangeSigners(ctx context.Context, before *types.RegistryEnt
 
 // emitRoleUpdated emits the comprehensive EventRoleUpdated for a single role, reading the
 // post-mutation addresses from state. before is the pre-mutation entry (source of previous
-// addresses and registry class id), and signers is the authorizing signer set. It returns a
-// deterministic error (rather than panicking) if the post-mutation read-back fails, so an
-// inconsistent store cannot halt block processing.
-func (k Keeper) emitRoleUpdated(ctx context.Context, before *types.RegistryEntry, role types.RegistryRole, signers []types.RoleSigner) error {
+// addresses and registry class id), signers is the authorizing signer set, and proposer is the
+// address that initiated the change. It returns a deterministic error (rather than panicking) if
+// the post-mutation read-back fails, so an inconsistent store cannot halt block processing.
+func (k Keeper) emitRoleUpdated(ctx context.Context, before *types.RegistryEntry, role types.RegistryRole, signers []types.RoleSigner, proposer string) error {
 	previous := before.GetRoleAddrs(role)
 	var current []string
 	after, err := k.GetRegistry(ctx, before.Key)
@@ -332,7 +332,7 @@ func (k Keeper) emitRoleUpdated(ctx context.Context, before *types.RegistryEntry
 	if after != nil {
 		current = after.GetRoleAddrs(role)
 	}
-	k.EmitEvent(ctx, types.NewEventRoleUpdated(before.Key, before.RegistryClassId, role, previous, current, signers))
+	k.EmitEvent(ctx, types.NewEventRoleUpdated(before.Key, before.RegistryClassId, role, previous, current, signers, proposer))
 	return nil
 }
 

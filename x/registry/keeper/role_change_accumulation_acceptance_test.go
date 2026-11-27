@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	abci "github.com/cometbft/cometbft/abci/types"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 
 	"cosmossdk.io/x/nft"
@@ -109,6 +110,22 @@ func (s *RoleChangeAccumulationAcceptanceTestSuite) proposeNewController(key *ty
 	})
 	s.Require().NoError(err)
 	return resp.ChangeId, resp.Applied
+}
+
+// roleUpdatedEvents returns all EventRoleUpdated emitted on the suite's context.
+func (s *RoleChangeAccumulationAcceptanceTestSuite) roleUpdatedEvents() []*types.EventRoleUpdated {
+	var out []*types.EventRoleUpdated
+	for _, e := range s.ctx.EventManager().Events() {
+		if e.Type != "provenance.registry.v1.EventRoleUpdated" {
+			continue
+		}
+		msg, err := sdk.ParseTypedEvent(abci.Event{Type: e.Type, Attributes: e.Attributes})
+		s.Require().NoError(err)
+		ev, ok := msg.(*types.EventRoleUpdated)
+		s.Require().True(ok)
+		out = append(out, ev)
+	}
+	return out
 }
 
 // approve records an approval for the pending change, signed by signer.
@@ -414,6 +431,16 @@ func (s *RoleChangeAccumulationAcceptanceTestSuite) TestControllerUpdate_NoSecur
 	s.execApproveViaAuthz(executor, s.newController, changeID)
 	s.Require().Contains(s.roleAddresses(key, controllerRole), s.newController,
 		"current + new controller approvals (both authz-delegated) satisfy the policy")
+
+	/*
+	 * The proposal was submitted by the executor (grantee) on behalf of the current controller
+	 * (granter). The EventRoleUpdated proposer must be the granter, since that is the account the
+	 * change was made for; the grantee is only visible in the transaction's signer infos.
+	 */
+	evts := s.roleUpdatedEvents()
+	s.Require().Len(evts, 1)
+	s.Require().Equal(s.currentController, evts[0].Proposer)
+	s.Require().NotEqual(executor, evts[0].Proposer)
 
 	pending, err := s.registryKeeper.GetPendingRoleChange(s.ctx, changeID)
 	s.Require().NoError(err)

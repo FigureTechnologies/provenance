@@ -88,7 +88,7 @@ func (k msgServer) GrantRole(ctx context.Context, msg *types.MsgGrantRole) (*typ
 	if err != nil {
 		return nil, err
 	}
-	if err := k.emitRoleUpdated(ctx, entry, msg.Role, signers); err != nil {
+	if err := k.emitRoleUpdated(ctx, entry, msg.Role, signers, msg.Signer); err != nil {
 		return nil, err
 	}
 
@@ -134,7 +134,7 @@ func (k msgServer) RevokeRole(ctx context.Context, msg *types.MsgRevokeRole) (*t
 	if err != nil {
 		return nil, err
 	}
-	if err := k.emitRoleUpdated(ctx, entry, msg.Role, signers); err != nil {
+	if err := k.emitRoleUpdated(ctx, entry, msg.Role, signers, msg.Signer); err != nil {
 		return nil, err
 	}
 
@@ -185,7 +185,7 @@ func (k msgServer) SetRoles(ctx context.Context, msg *types.MsgSetRoles) (*types
 		if err != nil {
 			return nil, err
 		}
-		if err := k.emitRoleUpdated(ctx, entry, update.Role, signers); err != nil {
+		if err := k.emitRoleUpdated(ctx, entry, update.Role, signers, msg.Signer); err != nil {
 			return nil, err
 		}
 	}
