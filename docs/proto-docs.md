@@ -9630,6 +9630,7 @@ for MsgSetRoles (including changes applied via the propose/approve accumulation 
 | `addresses` | [string](#string) | repeated | addresses are the addresses assigned to the role after this operation (empty if cleared). |
 | `previous_addresses` | [string](#string) | repeated | previous_addresses are the addresses assigned to the role before this operation. |
 | `signers` | [RoleSigner](#provenance-registry-v1-RoleSigner) | repeated | signers describes the roles/addresses that authorized this change. |
+| `proposer` | [string](#string) |  | proposer is the address that initiated the role change. For a change applied via the propose/approve flow, it is the signer of the MsgProposeRoleChange that opened the pending change; for MsgGrantRole, MsgRevokeRole, and MsgSetRoles, it is the message signer. When the message is executed via authz, this is the granter (the account the change was made on behalf of), not the grantee that submitted the transaction. |
 
 
 

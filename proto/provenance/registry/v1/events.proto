@@ -119,4 +119,10 @@ message EventRoleUpdated {
   repeated string previous_addresses = 6;
   // signers describes the roles/addresses that authorized this change.
   repeated RoleSigner signers = 7 [(gogoproto.nullable) = false];
+  // proposer is the address that initiated the role change. For a change applied via the
+  // propose/approve flow, it is the signer of the MsgProposeRoleChange that opened the pending
+  // change; for MsgGrantRole, MsgRevokeRole, and MsgSetRoles, it is the message signer. When the
+  // message is executed via authz, this is the granter (the account the change was made on behalf
+  // of), not the grantee that submitted the transaction.
+  string proposer = 8;
 }

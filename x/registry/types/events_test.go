@@ -428,3 +428,27 @@ func TestNewEventRegistryBulkUpdated(t *testing.T) {
 	assert.Equal(t, exp, act, "NewEventRegistryBulkUpdated result")
 	assertEverythingSet(t, act, "EventRegistryBulkUpdated")
 }
+
+func TestNewEventRoleUpdated(t *testing.T) {
+	key := &RegistryKey{AssetClassId: "asset-class-id", NftId: "nft-id"}
+	signers := []RoleSigner{NewNFTOwnerSigner("owner-addr")}
+	exp := &EventRoleUpdated{
+		NftId:             "nft-id",
+		AssetClassId:      "asset-class-id",
+		RegistryClassId:   "registry-class-id",
+		Role:              "SERVICER",
+		Addresses:         []string{"new-addr"},
+		PreviousAddresses: []string{"old-addr"},
+		Signers:           signers,
+		Proposer:          "proposer-addr",
+	}
+
+	var act *EventRoleUpdated
+	testFunc := func() {
+		act = NewEventRoleUpdated(key, "registry-class-id", RegistryRole_REGISTRY_ROLE_SERVICER,
+			[]string{"old-addr"}, []string{"new-addr"}, signers, "proposer-addr")
+	}
+	require.NotPanics(t, testFunc, "NewEventRoleUpdated")
+	assert.Equal(t, exp, act, "NewEventRoleUpdated result")
+	assertEverythingSet(t, act, "EventRoleUpdated")
+}
